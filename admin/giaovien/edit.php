@@ -67,8 +67,7 @@ $users = getSimpleQuery($sql);
                         }
                     ?>
                 </div>
-            </div>
-            <div class="col-md-6">
+
                 <div class="form-group">
                     <label for="">Số điện thoại</label>
                     <input type="text" class="form-control" name="phone" value="<?= $users['phone']; ?>">
@@ -80,20 +79,37 @@ $users = getSimpleQuery($sql);
                         }
                     ?>
                 </div>
-          <div class="form-group">
-                                    <label>Giới tính</label>
-                                    <br>
-                                    <input type="radio" name="gender" value="1" <?php if($users['gender'] == 1){ echo 'checked'; }  ?>> Nam &nbsp;
-                                    <input type="radio" name="gender" value="-1" <?php if($users['gender'] == -1){echo 'checked'; }  ?>> Nữ
-                                    </div>
-            </div>
-            
-            </div>
-                <div>
+
+                <div class="text-center">
                     <input type="hidden" value="<?= $_GET['id']; ?>" name="id">
-                    <a name="<?= $ADMIN_URL ?>giaovien" id="" class="btn btn-danger btn-xs" href="#" role="button">Hủy</a>
+                    <a name="<?= $ADMIN_URL ?>giaovien" id="" class="btn btn-danger btn-xs" href="<?= $ADMIN_URL ?>giaovien" role="button">Hủy</a>
                     <button type="submit" name="" class="btn btn-xs btn-primary">Cập nhật</button>
                 </div>
+            </div>
+            <div class="col-md-6">
+              <div class="form-group">
+                  <label>Giới tính</label>
+                  <br>
+                  <input type="radio" name="gender" value="1" <?php if($users['gender'] == 1){ echo 'checked'; }  ?>> Nam &nbsp;
+                  <input type="radio" name="gender" value="-1" <?php if($users['gender'] == -1){echo 'checked'; }  ?>> Nữ
+              </div>
+
+              <!-- Avatar -->
+              <img src="<?= SITE_URL.$users['avatar'] ?>" alt="" style="max-width:220px;" id="showImage">
+              <div class="form-group">
+                <label for="exampleFormControlFile1">Hình ảnh</label>
+                <input type="file" class="form-control" id="exampleFormControlFile1" name="avatar">
+                <?php  
+                  if(isset($_GET['errImage'])){
+                ?>
+                  <span class="text-danger"><?= $_GET['errImage']; ?></span>
+                <?php        
+                  }
+                ?>
+            </div>
+            
+          </div>
+                
         </form>
 
     </section>

@@ -4,12 +4,17 @@ require_once '../../commons/utils.php';
 	header('location: '. $ADMIN_URL .'giaovien');
 	die;
 }
- $email = trim($_POST['email']);
+$email = trim($_POST['email']);
 $fullname = trim($_POST['fullname']);
+$address = trim($_POST['address']);
+$phone = trim($_POST['phone']);
+$gender= trim($_POST['gender']);
 $password = $_POST['password'];
 $cfpassword = $_POST['cfpassword'];
+$status = 1; 
+$role = 1; 
 
-$e = $n = $p = $cp=  "";
+$e = $n = $ph = $a = $p = $cp=  "";
     if($email == ""){
         $e = "e=Nhập email&&";
     }else if(filter_var($email, FILTER_VALIDATE_EMAIL) == false ){
@@ -22,6 +27,20 @@ $e = $n = $p = $cp=  "";
         $n = "n=Nhập tên&&";
     }else{
         $n = "";
+    }
+
+    if($phone == ""){
+        $ph = "ph=Nhập số điện thoại";
+    }else if(is_numeric($phone)==false || strlen($phone) != 10){
+        $ph = "ph=Số điện thoại phải là số và 10 kí tự&&";
+    }else{
+        $ph = "";
+	}
+
+    if($address == ""){
+        $a = "a=Nhập địa chỉ&&";
+    }else{
+        $a = "";
     }
 
     if($password == ""){
@@ -38,17 +57,37 @@ $e = $n = $p = $cp=  "";
 		$cp = "";
 	}
 	
+   
+    $file = $_FILES['avatar'];
+    $allowed = ["jpeg","jpg","png"];
+    $i = "";
 
-    if($e !="" || $n != "" || $p !="" || $cp !=""){
-        header('location: '.$ADMIN_URL.'giaovien/add.php?'.$e.$n.$p.$cp);
+    if($file['size'] > 0){
+
+        $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+
+        if(!in_array($ext, $allowed)){
+            $i = "i=Chỉ cho phép jpeg, jpg, png&&";
+        }else{
+            $filename = "img/" . uniqid() . "." . $ext;
+            move_uploaded_file($file['tmp_name'], '../../' . $filename);
+            $avatar = $filename;
+        }
+
+    }else{
+        $avatar = "img/default.jpg";
+    }
+
+    if($e !="" || $n != "" || $ph !="" || $a !="" || $i !=""|| $p !="" || $cp !=""){
+        header('location: '.$ADMIN_URL.'giaovien/add.php?'.$e.$n.$ph.$a.$i.$p.$cp);
         die;
     }
 
  $password = password_hash($password, PASSWORD_DEFAULT);
  $sql = "insert into teachers 
-			(email, fullname, password)
+			(email, fullname, phone, address, avatar, gender, password, status, role)
 		values 
-			('$email', '$fullname', '$password')";
+			('$email', '$fullname', '$phone', '$address', '$avatar', '$gender', '$password', $status, $role)";
  getSimpleQuery($sql);
 header('location: '. $ADMIN_URL . 'giaovien?success=true');
 die;

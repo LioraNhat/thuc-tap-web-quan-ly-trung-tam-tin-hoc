@@ -35,7 +35,7 @@ $users = getSimpleQuery($sql, true);
         <small>Giáo viên</small>
       </h1>
       <ol class="breadcrumb">
-        <li><a href="#"><i class="fa fa-dashboard"></i> Home</a></li>
+        <li><a href="<?= $ADMIN_URL?>"><i class="fa fa-dashboard"></i> Home</a></li>
         <li class="active">Giáo viên</li>
       </ol>
     </section>
@@ -129,7 +129,10 @@ $users = getSimpleQuery($sql, true);
     ?> 
        swal('Tạo mới giáo viên thành công!');
     <?php }else if(isset($_GET['editsuccess']) && $_GET['editsuccess'] == true){ ?>
-      swal('Sửa giáo viên thành công!');
+      swal('Sửa giáo viên thành công!')
+      .then(() => {
+          window.history.replaceState(null, null, window.location.pathname);
+      });
     <?php }?>
    $('.btn-remove').on('click', function(){
     swal({
