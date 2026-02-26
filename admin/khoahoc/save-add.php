@@ -64,7 +64,7 @@ if($rs != false){
 	header('location: '. $ADMIN_URL .'khoahoc/add.php?n=Tên khóa học đã tồn tại, vui lòng chọn tên khác');
 	die;
 }
-$sql = $conn->prepare("insert into courses values ('', ?, ?,?,?,?,?)");
+$sql = $conn->prepare("insert into courses (name, image, tomtat, soTiet, hocphi, des) values (?, ?,?,?,?,?)");
 $data = array($name,$filename,$tomtat, $soTiet,$hocphi,$des);
 $sql->execute($data);
 header('location: '. $ADMIN_URL . 'khoahoc?success=true');
