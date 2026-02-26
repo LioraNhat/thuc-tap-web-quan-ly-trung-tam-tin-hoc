@@ -2,21 +2,26 @@
     $path = "../";
     require_once $path.$path.'commons/utils.php';
     $id = $_SESSION['login']['id'];
-    if($_SESSION['login']['role']==0){
-      header("Location:xemcheck.php");
-    // }
-    // else if($_SESSION['login']['role']==1){
-    //   $listRoomQuery = "select * from timetable where teacher_id = $id group by class_id";
-    //   $cates = getSimpleQuery($listRoomQuery);
-    //   $class_id = $cates['class_id'];
-    //   $listRoomQuery = "select * from classes where id = $class_id";
-    //   $cates = getSimpleQuery($listRoomQuery,true);
-    }else{
-    $listRoomQuery = "select * from classes";
-    $cates = getSimpleQuery($listRoomQuery,true);
-    }
+    $role = $_SESSION['login']['role'];
 
- ?>
+    if($role == 0){
+        // Nếu là học viên, chuyển hướng xem chuyên mục riêng
+        header("Location:xemcheck.php");
+        exit();
+    } else if($role == 1){
+        // Nếu là giáo viên, chỉ lấy các lớp mà giáo viên đó dạy
+        $listRoomQuery = "SELECT cl.* FROM classes cl 
+                          JOIN timetable tt ON cl.id = tt.class_id 
+                          WHERE tt.teacher_id = $id 
+                          GROUP BY cl.id";
+        $cates = getSimpleQuery($listRoomQuery, true);
+    } else {
+        // Nếu là Admin, lấy toàn bộ lớp học
+        $listRoomQuery = "select * from classes";
+        $cates = getSimpleQuery($listRoomQuery, true);
+    }
+?>
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -84,47 +89,41 @@
                 <tr>
                   <td><?php echo $row['id']; ?></td>
                   <td><?php echo $row['name']; ?></td>
-                  <td><?php $course = $row['course_id'];
-                    $listCourQuery = "select * from courses where id = $course";
-                    $cour = getSimpleQuery($listCourQuery);
-                    echo $cour['name'];
-                  ?></td>
+                  <td>
+                    <?php 
+                      // $course = $row['course_id'];
+                      // $listCourQuery = "select * from courses where id = $course";
+                      // $cour = getSimpleQuery($listCourQuery);
+                      // echo $cour['name'];
+                      $course = $row['course_id'];
+                      $listCourQuery = "select * from courses where id = $course";
+                      $cour = getSimpleQuery($listCourQuery);
+                      echo ($cour) ? $cour['name'] : '<span class="text-danger">Khóa học đã bị xóa</span>';
+                    ?>
+                  </td>
                   <td><?php echo $cour['soTiet']; ?></td>
                   <td><?php echo $row['created_at']; ?></td>
                   <td><?php echo $row['ended_at']; ?></td>
                   <td>
-                  <?php 
-                  $class = $row['id'];
-                  $listTimeQuery = "select * from timetable where class_id = $class";
-                  $cl = getSimpleQuery($listTimeQuery,true);
-                  if($cl){
-                  ?>
-                  <input type="button" name="view" value="<?php 
-                  $listClaQuery = "SELECT *,count(student_id) as total FROM classes join dangky on classes.id = dangky.class_id join student on dangky.student_id = student.id where class_id = $class and status = 1 GROUP by class_id";
-                  $cla = getSimpleQuery($listClaQuery);
-                  if($cla['total'] != ""){
-                  echo $cla['total'];
-                  }else{
-                    echo "0";
-                  }
-                  ?>" id="<?php echo $row["id"] ?>" alt="<?php echo $row['course_id']; ?>" class="btn btn-link view_data" />
-                  <?php }else{ ?>
-                    <input type="button" name="view" value="<?php 
-                    $listClaQuery = "SELECT *,count(student_id) as total FROM classes join dangky on classes.id = dangky.class_id join student on dangky.student_id = student.id where class_id = $class and status = 1 GROUP by class_id";
-                    $cla = getSimpleQuery($listClaQuery); 
-                      if($cla['total'] != ""){
-                  echo $cla['total'];
-                  }else{
-                    echo "0";
-                  }
-                      ?>" id="<?php echo $row["id"]; ?>" class="btn btn-link view_data" />
-                  <?php } ?>
+                      <?php 
+                      $class_id = $row['id'];
+                      // Đếm số lượng học viên đã đăng ký vào lớp này
+                      $sqlCount = "SELECT COUNT(*) as total FROM dangky WHERE class_id = $class_id";
+                      $countRes = getSimpleQuery($sqlCount);
+                      ?>
+                      <input type="button" 
+                            value="<?= ($countRes['total'] > 0) ? $countRes['total'] : '0'; ?>" 
+                            id="<?= $row['id'] ?>" 
+                            alt="<?= $row['course_id'] ?>" 
+                            class="btn btn-link view_data" />
                   </td>
-                  <td><?php if($row['ended_at'] == "0000-00-00" || empty($cl)){
+                  <td>
+                    <?php if($row['ended_at'] == "0000-00-00" || empty($cl)){
                     echo "<p class='text-primary'>Đang chờ lịch</p>";
-                  }else{
-                    echo "<p class='text-primary'>Đang học</p>";
-                  } ?></td>
+                    }else{
+                      echo "<p class='text-primary'>Đang học</p>";
+                    } ?>
+                  </td>
                   <?php if($_SESSION['login']['role']==500){ ?>
                   <td>
                   <a href="<?= $ADMIN_URL?>lop/edit.php?id=<?= $row['id']?>"

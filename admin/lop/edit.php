@@ -74,7 +74,7 @@ $cate_id = $cate['course_id'];
           </div>
 
           <div class="text-right">
-            <a href="<?= $ADMIN_URL ?>khoahoc" class="btn btn-danger btn-xs">Huỷ</a>
+            <a href="<?= $ADMIN_URL ?>lop" class="btn btn-danger btn-xs">Huỷ</a>
             <button type="submit" class="btn btn-xs btn-primary">Sửa</button>
           </div>
 

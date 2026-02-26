@@ -21,9 +21,11 @@ $session = getSimpleQuery($listSessionQuery,true);
 $listTeaQuery = "select * from teachers";
 $teacher = getSimpleQuery($listTeaQuery,true);
 
+//Code cũ
+// $listSubQuery = "select * from subject";
+// $subject = getSimpleQuery($listSubQuery,true);
 
-$listSubQuery = "select * from subject";
-$subject = getSimpleQuery($listSubQuery,true);
+
  ?>
 <!DOCTYPE html>
 <html>
@@ -112,6 +114,58 @@ $subject = getSimpleQuery($listSubQuery,true);
 
       <script type="text/javascript">
             $(document).ready(function(){
+              // Hàm dùng chung để tải danh sách giáo viên không bị trùng lịch
+              function updateTeacherList() {
+                  var date = $('#date').val();
+                  var session = $('#session_id').val();
+                  
+                  // Chỉ chạy AJAX khi đã chọn cả Ngày và Ca học
+                  if(date != "" && session != "0") {
+                      $.ajax({
+                          url: "xulyteacher.php", // Đảm bảo đúng tên file xử lý của bạn
+                          method: "post",
+                          data: { 
+                              date: date, 
+                              session: session 
+                          },
+                          success: function(kq){
+                              $('#teacher_id').html(kq);
+                          }
+                      });
+                  }
+              }
+
+              // Gọi hàm khi thay đổi Ngày học
+              $('#date').change(function(){
+                  updateTeacherList();
+              });
+
+              // Gọi hàm khi thay đổi Ca học
+              $('#session_id').change(function(){
+                  updateTeacherList();
+              });
+
+              function loadAvailableRooms() {
+                  var date = $('#date').val();
+                  var session = $('#session_id').val();
+                  
+                  if(date != "" && session != "0") {
+                      $.ajax({
+                          url: "xulyroom.php",
+                          method: "POST",
+                          data: { date: date, session: session },
+                          success: function(data) {
+                              $('#room_id').html(data);
+                          }
+                      });
+                  }
+              }
+
+              // Gọi hàm khi thay đổi Ngày hoặc Ca
+              $('#date, #session_id').on('change', function() {
+                  loadAvailableRooms();
+              });
+
               $('#session_id').change(function(){
                                 var date = $('#date').val();
                                 var lop = $('#class_id').val();

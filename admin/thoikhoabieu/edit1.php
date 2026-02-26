@@ -158,19 +158,21 @@ $teacher = getSimpleQuery($listTeaQuery,true);
                 }
 
                 function load1(){
-                                  $.ajax({
-                                    url:"xulyteacher.1.php",
-                                    method:"post",
-                                    data: {date:date,
-                                      lop:lop,
-                                      session:session,
-                                      tea:tea
-                                      },
-                                    dataType:"text",
-                                    success: function(kq){
-                                        $('#teacher_id').html(kq);
-                                    }
-                                  }); 
+                    $.ajax({
+                        url:"xulyteacher.1.php",
+                        method:"post",
+                        data: {
+                            date: date,
+                            lop: lop,
+                            session: session,
+                            tea: tea, // tea ở đây chính là $teacher_t (ID giáo viên cũ)
+                            is_edit: 1 // Gửi thêm cờ báo hiệu đây là chế độ sửa
+                        },
+                        dataType:"text",
+                        success: function(kq){
+                            $('#teacher_id').html(kq);
+                        }
+                    }); 
                 }
                 
                 $('#session_id').change(function(){
