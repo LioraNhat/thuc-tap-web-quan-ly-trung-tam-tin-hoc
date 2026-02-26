@@ -51,7 +51,6 @@ $tomtat = $_POST['tomtat'];
         header('location: '.$ADMIN_URL.'khoahoc/add.php?'.$n.$s.$h.$t.$i.$d);
         die;
     }
-    move_uploaded_file($file['tmp_name'], '../../' . $filename);
 // kiem tra xem ten co bi trong hay khong
 // if($name == ""){
 // 	header('location: '. $ADMIN_URL .'khoahoc/add.php?errName=Vui lòng không để trống tên khóa học');

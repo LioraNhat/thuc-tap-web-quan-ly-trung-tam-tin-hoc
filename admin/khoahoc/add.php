@@ -26,7 +26,7 @@
         <small>Control panel</small>
       </h1>
       <ol class="breadcrumb">
-        <li><a href="#"><i class="fa fa-dashboard"></i> Home</a></li>
+        <li><a href="<?= $ADMIN_URL ?>"><i class="fa fa-dashboard"></i> Home</a></li>
         <li class="active">Thêm khóa học</li>
       </ol>
     </section>
@@ -122,7 +122,7 @@
                           </div>
                 </div>
                 <div>
-                    <a name="<?= $ADMIN_URL ?>khoahoc" id="" class="btn btn-danger btn-xs" href="#" role="button">Hủy</a>
+                    <a name="<?= $ADMIN_URL ?>khoahoc" id="" class="btn btn-danger btn-xs" href="<?= $ADMIN_URL ?>khoahoc" role="button">Hủy</a>
                     <button type="submit" name="" class="btn btn-xs btn-primary">Tạo mới</button>
                 </div>
                 

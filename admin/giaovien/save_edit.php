@@ -38,8 +38,38 @@ $gender= $_POST['gender'];
         die;
     }
 
+    // Lấy ảnh cũ
+    $sqlOld = "select avatar from teachers where id = $id";
+    $oldData = getSimpleQuery($sqlOld);
+    $oldAvatar = $oldData['avatar'];
+    $file = $_FILES['avatar'];
+    $allowed = ["jpg","jpeg","png"];
+    $avatar = $oldAvatar; // mặc định giữ ảnh cũ
 
- $sql = "update teachers set fullname = '$fullname', address = '$address' , gender = '$gender', phone = '$phone' where id = '$id'";
+    if($file['size'] > 0){
+
+        $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+
+        if(in_array($ext, $allowed)){
+
+            $filename = "img/" . uniqid() . "." . $ext;
+
+            move_uploaded_file($file['tmp_name'], "../../" . $filename);
+
+            $avatar = $filename;
+
+            // Xóa ảnh cũ nếu không phải default
+            if($oldAvatar != "img/default.jpg" && file_exists("../../".$oldAvatar)){
+                unlink("../../".$oldAvatar);
+            }
+
+        }else{
+            header('location: '.$ADMIN_URL.'giaovien/edit.php?id='.$id.'&errImage=Chỉ cho phép jpg, jpeg, png');
+            die;
+        }
+    }
+
+ $sql = "update teachers set fullname = '$fullname', address = '$address' , gender = '$gender', phone = '$phone', avatar = '$avatar' where id = '$id'";
  getSimpleQuery($sql);
 header('location: '. $ADMIN_URL. 'giaovien?editsuccess=true');
 die;

@@ -129,7 +129,7 @@ if(!$cate){
                 </div>
                 <div>
                                             <input type="hidden" name="id" value="<?= $cateId ?>">
-                    <a name="<?= $ADMIN_URL ?>khoahoc" id="" class="btn btn-danger btn-xs" href="#" role="button">Hủy</a>
+                    <a name="<?= $ADMIN_URL ?>khoahoc" id="" class="btn btn-danger btn-xs" href="<?= $ADMIN_URL ?>khoahoc" role="button">Hủy</a>
                     <button type="submit" name="" class="btn btn-xs btn-primary">Tạo mới</button>
                 </div>
                 
