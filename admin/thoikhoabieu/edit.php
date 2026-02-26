@@ -183,7 +183,7 @@ $teacher = getSimpleQuery($listTeaQuery,true);
           <input type="hidden" name="ses" class="form-control" value="<?php echo $session_t ?>">
           <input type="hidden" id="tea" name="tea" class="form-control" value="<?php echo $teacher_t ?>">
           <input type="hidden" name="id" class="form-control" value="<?php echo $_GET['id']; ?>">
-              <a href="<?= $ADMIN_URL?>lop" class="btn btn-danger btn-xs">Huỷ</a>
+              <a href="<?= $ADMIN_URL?>thoikhoabieu" class="btn btn-danger btn-xs">Huỷ</a>
               <button type="submit" class="btn btn-xs btn-primary">Tạo mới</button>
             </div>
           </div>

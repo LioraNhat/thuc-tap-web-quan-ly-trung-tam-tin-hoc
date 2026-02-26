@@ -105,39 +105,65 @@
                   <td><?php echo $row['created_at']; ?></td>
                   <td><?php echo $row['ended_at']; ?></td>
                   <td>
-                      <?php 
-                      $class_id = $row['id'];
-                      // Đếm số lượng học viên đã đăng ký vào lớp này
-                      $sqlCount = "SELECT COUNT(*) as total FROM dangky WHERE class_id = $class_id";
-                      $countRes = getSimpleQuery($sqlCount);
-                      ?>
-                      <input type="button" 
-                            value="<?= ($countRes['total'] > 0) ? $countRes['total'] : '0'; ?>" 
-                            id="<?= $row['id'] ?>" 
-                            alt="<?= $row['course_id'] ?>" 
-                            class="btn btn-link view_data" />
+                    <?php 
+                    $current_class_id = $row['id'];
+                    $sqlCount = "SELECT COUNT(*) as total FROM dangky WHERE class_id = $current_class_id";
+                    $countRes = getSimpleQuery($sqlCount);
+                    ?>
+                    <input type="button" 
+                          value="<?= ($countRes['total'] > 0) ? $countRes['total'] : '0'; ?>" 
+                          id="<?= $row['id'] ?>" 
+                          alt="<?= $row['course_id'] ?>" 
+                          class="btn btn-link view_data" />
                   </td>
+
                   <td>
-                    <?php if($row['ended_at'] == "0000-00-00" || empty($cl)){
-                    echo "<p class='text-primary'>Đang chờ lịch</p>";
-                    }else{
-                      echo "<p class='text-primary'>Đang học</p>";
-                    } ?>
+                    <?php 
+                        $today = date("Y-m-d");
+                        $ended_at = $row['ended_at'];
+                        
+                        // Kiểm tra trực tiếp xem lớp này đã được xếp lịch trong timetable chưa
+                        $checkLich = getSimpleQuery("SELECT id FROM timetable WHERE class_id = $current_class_id LIMIT 1");
+
+                        if (!$checkLich) {
+                            // Trường hợp 1: Hoàn toàn chưa có dòng nào trong bảng timetable
+                            echo "<span class='label label-default'>Đang chờ lịch</span>";
+                        } else if ($ended_at != "0000-00-00" && $today > $ended_at) {
+                            // Trường hợp 2: Có lịch nhưng ngày hiện tại đã qua ngày kết thúc
+                            echo "<span class='label label-danger'>Đã kết thúc</span>";
+                        } else {
+                            // Trường hợp 3: Có lịch và vẫn đang trong thời gian học
+                            echo "<span class='label label-success'>Đang học</span>";
+                        }
+                    ?>
                   </td>
                   <?php if($_SESSION['login']['role']==500){ ?>
                   <td>
-                  <a href="<?= $ADMIN_URL?>lop/edit.php?id=<?= $row['id']?>"
-                      class="btn btn-xs btn-primary"
-                      >
-                      <i class="fa fa-cog"></i>  Sửa
-                      </a>
-                      <a href="javascript:;"
-                        linkurl="<?= $ADMIN_URL?>lop/remove.php?id=<?= $row['id']?>"
-                      class="btn btn-xs btn-danger btn-remove"
-                      >
-                      <i class="fa fa-trash-o"></i> Xoá
-                      </a>
-                 </td>
+                    <a href="<?= $ADMIN_URL?>lop/edit.php?id=<?= $row['id']?>" class="btn btn-xs btn-primary">
+                        <i class="fa fa-cog"></i> Sửa
+                    </a>
+
+                    <?php 
+                        $today = date("Y-m-d");
+                        $ended_at = $row['ended_at'];
+                        // Sử dụng lại biến $checkLich chúng ta đã tạo ở cột Tình trạng trước đó
+                        $checkLich = getSimpleQuery("SELECT id FROM timetable WHERE class_id = ".$row['id']." LIMIT 1");
+
+                        // ĐIỀU KIỆN KHÓA NÚT XÓA: 
+                        // Lớp có lịch dạy VÀ (Ngày kết thúc chưa tới HOẶC chưa có ngày kết thúc cụ thể)
+                        if ($checkLich && ($ended_at == "0000-00-00" || $today <= $ended_at)) { 
+                    ?>
+                        <button class="btn btn-xs btn-default" disabled title="Lớp đang học không thể xóa">
+                            <i class="fa fa-lock"></i> Xóa
+                        </button>
+                    <?php } else { ?>
+                        <a href="javascript:;"
+                          linkurl="<?= $ADMIN_URL?>lop/remove.php?id=<?= $row['id']?>"
+                          class="btn btn-xs btn-danger btn-remove">
+                            <i class="fa fa-trash-o"></i> Xoá
+                        </a>
+                    <?php } ?>
+                  </td>
                   <?php } ?>
                 </tr>
                 <?php } ?>

@@ -75,18 +75,36 @@
                   </td>
                   <td><a href="<?php echo $ADMIN_URL."khoahoc/lesson.php?id=".$row['id']; ?>"><?php echo $row['less']." bài học"; ?></a> </td>
                   <td>
-                  <a href="<?= $ADMIN_URL?>khoahoc/edit.php?id=<?= $row['id']?>"
-                      class="btn btn-xs btn-primary"
-                      >
-                      <i class="fa fa-cog"></i>  Sửa
-                      </a>
-                      <a href="javascript:;"
-                        linkurl="<?= $ADMIN_URL?>khoahoc/remove.php?id=<?= $row['id']?>"
-                      class="btn btn-xs btn-danger btn-remove"
-                      >
-                      <i class="fa fa-trash-o"></i> Xoá
-                      </a>
-                 </td>
+                    <a href="<?= $ADMIN_URL?>khoahoc/edit.php?id=<?= $row['id']?>" class="btn btn-xs btn-primary">
+                        <i class="fa fa-cog"></i> Sửa
+                    </a>
+
+                    <?php 
+                        $today = date("Y-m-d");
+                        $course_id = $row['id'];
+
+                        // KIỂM TRA: Tìm xem có lớp nào thuộc khóa học này đang học hay không
+                        // Điều kiện: Lớp thuộc khóa học này VÀ (chưa có ngày kết thúc HOẶC ngày kết thúc >= hôm nay)
+                        // VÀ lớp đó phải có lịch trong timetable (đã xếp lịch)
+                        $checkClassActive = getSimpleQuery("SELECT c.id FROM classes c 
+                                                            JOIN timetable t ON c.id = t.class_id 
+                                                            WHERE c.course_id = $course_id 
+                                                            AND (c.ended_at = '0000-00-00' OR c.ended_at >= '$today') 
+                                                            LIMIT 1");
+
+                        if ($checkClassActive) { 
+                    ?>
+                        <button class="btn btn-xs btn-default" disabled title="Khóa học có lớp đang diễn ra, không thể xóa">
+                            <i class="fa fa-lock"></i> Xóa
+                        </button>
+                    <?php } else { ?>
+                        <a href="javascript:;"
+                          linkurl="<?= $ADMIN_URL?>khoahoc/remove.php?id=<?= $row['id']?>"
+                          class="btn btn-xs btn-danger btn-remove">
+                            <i class="fa fa-trash-o"></i> Xoá
+                        </a>
+                    <?php } ?>
+                  </td>
                 </tr>
                 <?php } ?>
               </tbody>
