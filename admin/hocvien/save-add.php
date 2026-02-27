@@ -16,6 +16,8 @@ $sql = "select *
         from classes where id = $class_id";
 $users = getSimpleQuery($sql);
 $course = $users['course_id'];
+$teacher = 0;
+$diemTB = 0;
 
 $e = $n = $p = $cp= $c = $ph = "";
     if($email == ""){
@@ -85,7 +87,7 @@ $sql = "select *
 $users = getSimpleQuery($sql);
 $user = $users['id'];
 
-$sql = "insert into dangky values ('','$user', '$course', '$class_id','$created_at')";
+$sql = "insert into dangky(student_id, course_id, class_id, created_at) values ('$user', '$course', '$class_id','$created_at')";
  getSimpleQuery($sql);
 
 // $sql = "insert into orders 
@@ -95,9 +97,9 @@ $sql = "insert into dangky values ('','$user', '$course', '$class_id','$created_
 //  getSimpleQuery($sql);
 
  $sql = "insert into scores 
-			(student_id, course_id)
+			(student_id, course_id, teacher_id, diemTB)
 		values 
-			('$user', '$course')";
+			('$user', '$course', '$teacher', '$diemTB')";
  getSimpleQuery($sql);
 
 header('location: '. $ADMIN_URL . 'hocvien?success=true');

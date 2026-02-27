@@ -143,7 +143,7 @@
                           </div>
                 </div>
                 <div>
-                    <a name="<?= $ADMIN_URL ?>hocvien" id="" class="btn btn-danger btn-xs" href="#" role="button">Hủy</a>
+                    <a name="<?= $ADMIN_URL ?>hocvien" id="" class="btn btn-danger btn-xs" href="<?= $ADMIN_URL ?>hocvien" role="button">Hủy</a>
                     <button type="submit" name="" class="btn btn-xs btn-primary">Tạo mới</button>
                 </div>
                 

@@ -4,7 +4,7 @@ require_once '../../commons/utils.php';
 	header('location: '. $ADMIN_URL .'khachhang');
 	die;
 }
- $email = trim($_POST['email']);
+$email = trim($_POST['email']);
 $fullname = trim($_POST['fullname']);
 $class_id = $_POST['class_id'];
 $course_id = $_POST['course_id'];
@@ -14,6 +14,8 @@ $sql = "select *
         from classes where id = $class_id";
 $users = getSimpleQuery($sql);
 $course = $users['course_id'];
+$teacher = 0;
+$diemTB = 0;
 
 $e = $n = $c = $ph = "";
     if($email == ""){
@@ -58,12 +60,12 @@ $e = $n = $c = $ph = "";
         die;
     }
 
- $password = password_hash($password, PASSWORD_DEFAULT);
+ $password = password_hash('123', PASSWORD_DEFAULT);
 
  $sql = "insert into student 
-			(email, fullname, phone,status)
+			(email, fullname, password, phone, status)
 		values 
-			('$email', '$fullname','$phone','0')";
+			('$email', '$fullname', '$password', '$phone','0')";
  getSimpleQuery($sql);
  
 $sql = "select *
@@ -71,7 +73,7 @@ $sql = "select *
 $users = getSimpleQuery($sql);
 $user = $users['id'];
 
-$sql = "insert into dangky values ('','$user', '$course', '$class_id','$created_at')";
+$sql = "insert into dangky(student_id, course_id, class_id, created_at) values ('$user', '$course', '$class_id','$created_at')";
  getSimpleQuery($sql);
 
 // $sql = "insert into orders 
@@ -81,9 +83,9 @@ $sql = "insert into dangky values ('','$user', '$course', '$class_id','$created_
 //  getSimpleQuery($sql);
 
  $sql = "insert into scores 
-			(student_id, course_id)
+			(student_id, course_id, teacher_id, diemTB)
 		values 
-			('$user', '$course')";
+			('$user', '$course', '$teacher', '$diemTB')";
  getSimpleQuery($sql);
 
 header('location: '. $ADMIN_URL . 'khachhang?success=true');

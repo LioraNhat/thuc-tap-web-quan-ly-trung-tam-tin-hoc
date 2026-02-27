@@ -102,7 +102,7 @@ $users = getSimpleQuery($sql);
             </div>
                 <div>
                     <input type="hidden" value="<?= $_GET['id'] ?>" name="id">
-                    <a name="<?= $ADMIN_URL ?>nhanvien" id="" class="btn btn-danger btn-xs" href="#" role="button">Hủy</a>
+                    <a name="<?= $ADMIN_URL ?>nhanvien" id="" class="btn btn-danger btn-xs" href="<?= $ADMIN_URL ?>nhanvien" role="button">Hủy</a>
                     <button type="submit" name="" class="btn btn-xs btn-primary">Cập nhật</button>
                 </div>
         </form>
