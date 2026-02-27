@@ -57,6 +57,13 @@ $teacher = getSimpleQuery($listTeaQuery,true);
 
     <!-- Main content -->
     <section class="content">
+    <?php if(isset($_GET['err'])): ?>
+        <div class="alert alert-danger alert-dismissible">
+            <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+            <h4><i class="icon fa fa-ban"></i> Lỗi!</h4>
+            <?php echo $_GET['err']; ?>
+        </div>
+    <?php endif; ?>
     <form action="<?= $ADMIN_URL ?>thoikhoabieu/save-edit.php" method="post">
       <div class="box">
         <div class="box-header">
@@ -278,6 +285,10 @@ $teacher = getSimpleQuery($listTeaQuery,true);
                                   }); 
                 })
             });
+
+            <?php if(isset($_GET['editsuccess'])): ?>
+              swal('Sửa lịch học thành công!', '', 'success');
+            <?php endif; ?>
           </script>
       </form>
 

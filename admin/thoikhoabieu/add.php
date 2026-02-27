@@ -2,326 +2,278 @@
 $path = "../";
 require_once $path.$path.'commons/utils.php';
 
-$listCateQuery =   "select * from courses";
-$cates = getSimpleQuery($listCateQuery,true);
+// ====== LOAD DATA ======
+$listCateQuery = "SELECT * FROM courses";
+$cates = getSimpleQuery($listCateQuery, true);
 
-$listClassQuery = "select * from classes";
-$class = getSimpleQuery($listClassQuery,true);
+$listClassQuery = "SELECT * FROM classes";
+$class = getSimpleQuery($listClassQuery, true);
 
+$listRoomQuery = "SELECT * FROM rooms";
+$room = getSimpleQuery($listRoomQuery, true);
 
-$listRoomQuery = "select * from rooms";
-$room = getSimpleQuery($listRoomQuery,true);
+$listSessionQuery = "SELECT * FROM session";
+$session = getSimpleQuery($listSessionQuery, true);
 
-
-$listSessionQuery = "select * from session";
-$session = getSimpleQuery($listSessionQuery,true);
-
-
-$listTeaQuery = "select * from teachers";
-$teacher = getSimpleQuery($listTeaQuery,true);
-
-
-// $listSubQuery = "select * from subject";
-// $subject = getSimpleQuery($listSubQuery,true);
- ?>
+$listTeaQuery = "SELECT * FROM teachers";
+$teacher = getSimpleQuery($listTeaQuery, true);
+?>
 
 <!DOCTYPE html>
 <html>
 <head>
   <meta charset="utf-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <title>POLY | Thêm phòng</title>
+  <title>POLY | Thêm lịch học</title>
   <?php include_once $path.'_share/style_assets.php'; ?>
 </head>
+
 <body class="hold-transition skin-blue sidebar-mini">
 <div class="wrapper">
-  <?php include_once $path.'_share/header.php'; ?>
-  
-  <?php include_once $path.'_share/sidebar.php'; ?>
-  
 
-  <!-- Content Wrapper. Contains page content -->
-  <div class="content-wrapper">
-    <!-- Content Header (Page header) -->
-    <section class="content-header">
-      <h1>
-      Thêm lịch học
-      </h1>
-      <ol class="breadcrumb">
-        <li><a href="#"><i class="fa fa-dashboard"></i> Home</a></li>
-        <li class="active">Thêm lịch học</li>
-      </ol>
-    </section>
+<?php include_once $path.'_share/header.php'; ?>
+<?php include_once $path.'_share/sidebar.php'; ?>
 
-    <!-- Main content -->
-    <section class="content">
-      <form action="<?= $ADMIN_URL ?>thoikhoabieu/save-add.php" method="post">
-      <div class="box">
-        <div class="box-header">
-                <h3 class="box-title">Thêm lịch học</h3>
-        </div>
-              <!-- /.box-header -->
-        <div class="box-body">
-        <div class="col-md-6">
-        <div class="form-group">
-            <label>Khóa học</label>
-            <select class="form-control" name="course_id" id="course_id">
-                <option value="0">--Chọn khóa học--</option>
-                                                <?php foreach($cates as $row){ ?>
-                                                    <option value="<?php echo $row['id']; ?>"><?php echo $row['name']; ?></option>
-                                                <?php } ?>
-                                                </select><?php 
-              if(isset($_GET['k'])){
-                ?>
-                <span class="text-danger"><?= $_GET['k'] ?></span>
-                <?php
-              }
-             ?>
-          </div>
+<div class="content-wrapper">
 
-          <div class="form-group">
-            <label>Lớp học</label>
-            <select class="form-control" name="class_id" id="class_id">
-                <option value="0">--Chọn lớp học--</option>
-                                                <?php foreach($class as $row){ ?>
-                                                    <option value="<?php echo $row['id']; ?>"><?php echo $row['name']; ?></option>
-                                                <?php } ?>
-                                                </select>
-                                                <?php 
-              if(isset($_GET['c'])){
-                ?>
-                <span class="text-danger"><?= $_GET['c'] ?></span>
-                <?php
-              }
-             ?>
-          </div>
+<section class="content-header">
+  <h1>Thêm lịch học</h1>
+  <ol class="breadcrumb">
+    <li><a href="#"><i class="fa fa-dashboard"></i> Home</a></li>
+    <li class="active">Thêm lịch học</li>
+  </ol>
+</section>
 
-          <div class="form-group">
-            <label>Ngày bắt đầu</label>
-            <input type="date" name="created" class="form-control" id="date">
-            <?php 
-              if(isset($_GET['cr'])){
-                ?>
-                <span class="text-danger"><?= $_GET['cr'] ?></span>
-                <?php
-              }
-             ?>
-          </div>
+<section class="content">
+<form action="<?= $ADMIN_URL ?>thoikhoabieu/save-add.php" method="post">
 
-          <div class="form-check">
-              <input class="form-check-input" type="checkbox" value="1" id="chosen_end" name="chosen_end"><label class="form-check-label" for="">Ngày kết thúc</label>
-            </div>
+<div class="row">
+<div class="col-md-12">
 
-          <div class="form-group">
-            <!-- <label>Ngày kết thúc</label> -->
-            <input type="date" name="ended" class="form-control" id="ended" disabled>
-          </div>
-
-          <script>
-            document.getElementById('chosen_end').onchange = function() {
-                document.getElementById('ended').disabled = !this.checked;
-            };
-          </script>
-
-          <!-- <div class="form-group">
-            <label>Ngày kết thúc</label>
-            <input type="date" name="ended" class="form-control" id="date" disabled>
-          </div> -->
-
-          <div class="form-group"  style="margin-bottom:0px;">
-          <label for="">Chọn thứ trong tuần</label>
-          </div>
-          <div class="row">
-          <div class="col-md-3">
-            <div class="form-check">
-              <input class="form-check-input" type="checkbox" value="1" name="check[]"><label class="form-check-label" for="">Thứ hai</label>
-            </div>
-            <div class="form-check">
-              <input class="form-check-input" type="checkbox" value="2" name="check[]"><label class="form-check-label" for="">Thứ ba</label>
-            </div>
-          </div>
-          <div class="col-md-3">
-            <div class="form-check">
-                <input class="form-check-input" type="checkbox" value="3" name="check[]"><label class="form-check-label" for="">Thứ tư</label>
-              </div>
-              <div class="form-check">
-                <input class="form-check-input" type="checkbox" value="4" name="check[]"><label class="form-check-label" for="">Thứ năm</label>
-              </div>
-          </div>
-          <div class="col-md-3">
-            <div class="form-check">
-                <input class="form-check-input" type="checkbox" value="5" name="check[]"><label class="form-check-label" for="">Thứ sáu</label>
-              </div>
-              <div class="form-check">
-                <input class="form-check-input" type="checkbox" value="6" name="check[]"><label class="form-check-label" for="">Thứ bảy</label>
-              </div>
-          </div>
-          <div class="col-md-3">
-            <div class="form-check">
-              <input class="form-check-input" type="checkbox" value="7" name="check[]"><label class="form-check-label" for="">Chủ nhật</label>
-            </div>
-          </div>
-          </div><?php 
-              if(isset($_GET['th'])){
-                ?>
-                <span class="text-danger"><?= $_GET['th'] ?></span>
-                <?php
-              }
-             ?>
-          
-        </div>
-        <div class="col-md-6">
-          
-        <div class="form-group">
-            <label>Ca học</label>
-            <select class="form-control" name="session_id" id="session_id">
-                <option value="0">--Chọn ca học--</option>
-                <?php foreach($session as $row){ ?>
-                  <option value="<?php echo $row['id']; ?>"><?php echo $row['name']; ?></option>
-                <?php } ?>
-              </select><?php 
-              if(isset($_GET['s'])){
-                ?>
-                <span class="text-danger"><?= $_GET['s'] ?></span>
-                <?php
-              }
-             ?>
-            </div>
-
-          <!-- <div class="form-group">
-            <label>Số tiết</label> -->
-            <input type="hidden" name="soTiet" id="soTiet" class="form-control">
-            <!-- </div> -->
-
-          <div class="form-group">
-            <label>Phòng học</label>
-            <select class="form-control" name="room_id" id="room_id">
-                <option value="0">--Chọn phòng học--</option>
-                <?php foreach($room as $row){ ?>
-                  <option value="<?php echo $row['id']; ?>"><?php echo $row['name']; ?></option>
-                <?php } ?>
-              </select><?php 
-              if(isset($_GET['r'])){
-                ?>
-                <span class="text-danger"><?= $_GET['r'] ?></span>
-                <?php
-              }
-             ?>
-            </div>
-
-            <div class="form-group">
-            <label>Giáo viên</label>
-            <select class="form-control" name="teacher_id" id="teacher_id">
-                <option value="0">--Chọn giáo viên--</option>
-                <?php foreach($teacher as $row){ ?>
-                  <option value="<?php echo $row['id']; ?>"><?php echo $row['fullname']; ?></option>
-                <?php } ?>
-              </select><?php 
-              if(isset($_GET['t'])){
-                ?>
-                <span class="text-danger"><?= $_GET['t'] ?></span>
-                <?php
-              }
-             ?>
-            </div>
-          </div>
-          <div class="col-md-12">
-          <div>
-              <a href="<?= $ADMIN_URL?>lop" class="btn btn-danger btn-xs">Huỷ</a>
-              <button type="submit" class="btn btn-xs btn-primary">Tạo mới</button>
-            </div>
-          </div>
-        </div>
-            <!-- /.box-body -->
-      </div>
-      </div>
-
-      <script type="text/javascript">
-            $(document).ready(function(){
-              $('#session_id').change(function(){
-                                var date = $('#date').val();
-                                var lop = $('#class_id').val();
-                                var session = $('#session_id').val();
-                                // var subject = $('#subject_id').val();
-                                $.ajax({
-                                    url:"xulyroom.php",
-                                    method:"post",
-                                    data: {date:date,
-                                      lop:lop,
-                                      session:session,
-                                      // subject:subject
-                                      },
-                                    dataType:"text",
-                                    success: function(kq){
-                                        $('#room_id').html(kq);
-                                    }
-                                  }); 
-                })
-
-                $('#class_id').change(function(){
-                                var course = $('#course_id').val();
-                                $.ajax({
-                                    url:"../lop/xulycourse.php",
-                                    method:"post",
-                                    data: {
-                                      course:course},
-                                    dataType:"text",
-                                    success: function(kq){
-                                        $('#soTiet').val(kq);
-                                    }
-                                  }); 
-                })
-
-                $('#course_id').change(function(){
-                                var course = $('#course_id').val();
-                                $.ajax({
-                                    url:"../baitap/xulysubject.php",
-                                    method:"post",
-                                    data: {
-                                      course:course},
-                                    dataType:"text",
-                                    success: function(kq){
-                                        $('#class_id').html(kq);
-                                    }
-                                  }); 
-                })
-
-
-                $('#room_id').change(function(){
-                                var date = $('#date').val();
-                                var lop = $('#class_id').val();
-                                var session = $('#session_id').val();
-                                // var subject = $('#subject_id').val();
-                                var room = $('#room_id').val();
-                                $.ajax({
-                                    url:"xulyteacher.php",
-                                    method:"post",
-                                    data: {date:date,
-                                      lop:lop,
-                                      session:session,
-                                      // subject:subject,
-                                      room:room},
-                                    dataType:"text",
-                                    success: function(kq){
-                                      // alert(kq);
-                                        $('#teacher_id').html(kq);
-                                    }
-                                  }); 
-                })
-            });
-          </script>
-      </form>
-      
-
-    </section>
-    <!-- /.content -->
-  </div>
-  <!-- /.content-wrapper -->
-  
-  <?php include_once $path.'_share/footer.php'; ?>
+<div class="box box-primary">
+<div class="box-header with-border">
+  <h3 class="box-title">Thông tin lịch học</h3>
 </div>
-<!-- ./wrapper -->
+
+<div class="box-body">
+
+<div class="row">
+
+<!-- LEFT COLUMN -->
+<div class="col-md-6">
+
+<!-- Khóa học -->
+<div class="form-group">
+  <label>Khóa học</label>
+  <select class="form-control" name="course_id" id="course_id">
+    <option value="0">-- Chọn khóa học --</option>
+    <?php foreach($cates as $row){ ?>
+      <option value="<?= $row['id'] ?>"><?= $row['name'] ?></option>
+    <?php } ?>
+  </select>
+  <?php if(isset($_GET['k'])): ?>
+    <span class="text-danger"><?= $_GET['k'] ?></span>
+  <?php endif; ?>
+</div>
+
+<!-- Lớp học -->
+<div class="form-group">
+  <label>Lớp học</label>
+  <select class="form-control" name="class_id" id="class_id">
+    <option value="0">-- Chọn lớp học --</option>
+    <?php foreach($class as $row){ ?>
+      <option value="<?= $row['id'] ?>"><?= $row['name'] ?></option>
+    <?php } ?>
+  </select>
+  <?php if(isset($_GET['c'])): ?>
+    <span class="text-danger"><?= $_GET['c'] ?></span>
+  <?php endif; ?>
+</div>
+
+<!-- Ngày bắt đầu -->
+<div class="form-group">
+  <label>Ngày bắt đầu</label>
+  <input type="date" name="created" id="date" class="form-control">
+  <?php if(isset($_GET['cr'])): ?>
+    <span class="text-danger"><?= $_GET['cr'] ?></span>
+  <?php endif; ?>
+</div>
+
+<!-- Ngày kết thúc -->
+<div class="checkbox">
+  <label>
+    <input type="checkbox" id="chosen_end" name="chosen_end" value="1">
+    Có ngày kết thúc
+  </label>
+</div>
+
+<div class="form-group">
+  <input type="date" name="ended" id="ended" class="form-control" disabled>
+</div>
+
+<!-- Thứ trong tuần -->
+<div class="form-group">
+  <label>Chọn thứ trong tuần</label>
+  <div class="row">
+
+  <?php 
+  $days = [
+    1=>"Thứ hai",2=>"Thứ ba",3=>"Thứ tư",
+    4=>"Thứ năm",5=>"Thứ sáu",6=>"Thứ bảy",7=>"Chủ nhật"
+  ];
+  foreach($days as $value=>$label): ?>
+    <div class="col-md-3">
+      <div class="checkbox">
+        <label>
+          <input type="checkbox" name="check[]" value="<?= $value ?>">
+          <?= $label ?>
+        </label>
+      </div>
+    </div>
+  <?php endforeach; ?>
+
+  </div>
+  <?php if(isset($_GET['th'])): ?>
+    <span class="text-danger"><?= $_GET['th'] ?></span>
+  <?php endif; ?>
+</div>
+
+</div>
+
+
+<!-- RIGHT COLUMN -->
+<div class="col-md-6">
+
+<!-- Ca học -->
+<div class="form-group">
+  <label>Ca học</label>
+  <select class="form-control" name="session_id" id="session_id">
+    <option value="0">-- Chọn ca học --</option>
+    <?php foreach($session as $row){ ?>
+      <option value="<?= $row['id'] ?>"><?= $row['name'] ?></option>
+    <?php } ?>
+  </select>
+  <?php if(isset($_GET['s'])): ?>
+    <span class="text-danger"><?= $_GET['s'] ?></span>
+  <?php endif; ?>
+</div>
+
+<input type="hidden" name="soTiet" id="soTiet">
+
+<!-- Phòng -->
+<div class="form-group">
+  <label>Phòng học</label>
+  <select class="form-control" name="room_id" id="room_id">
+    <option value="0">-- Vui lòng chọn Ngày & Ca trước --</option>
+  </select>
+</div>
+
+<!-- Giáo viên -->
+<div class="form-group">
+  <label>Giáo viên</label>
+  <select class="form-control" name="teacher_id" id="teacher_id">
+    <option value="0">-- Vui lòng chọn Phòng học trước --</option>
+  </select>
+</div>
+
+</div>
+
+</div>
+</div>
+
+<div class="box-footer">
+  <a href="<?= $ADMIN_URL?>lop" class="btn btn-danger">Huỷ</a>
+  <button type="submit" class="btn btn-primary">Tạo mới</button>
+</div>
+
+</div>
+</div>
+</div>
+
+</form>
+</section>
+</div>
+
+<?php include_once $path.'_share/footer.php'; ?>
+</div>
 
 <?php include_once $path.'_share/script_assets.php'; ?>
+
+<script>
+$(document).ready(function(){
+
+  $('#chosen_end').change(function(){
+      $('#ended').prop('disabled', !this.checked);
+  });
+
+  function resetRoom(){
+      $('#room_id').html("<option value='0'>-- Vui lòng chọn Ngày & Ca trước --</option>");
+      resetTeacher();
+  }
+
+  function resetTeacher(){
+      $('#teacher_id').html("<option value='0'>-- Vui lòng chọn Phòng học trước --</option>");
+  }
+
+  function getSelectionData() {
+    // Lấy mảng các thứ đã chọn (ví dụ: [1, 3, 5])
+    var selectedDays = [];
+    $('input[name="check[]"]:checked').each(function() {
+        selectedDays.push($(this).val());
+    });
+
+    return {
+        date: $('#date').val(),
+        ended: $('#chosen_end').is(':checked') ? $('#ended').val() : $('#date').val(),
+        session: $('#session_id').val(),
+        days: selectedDays
+    };
+}
+
+function loadRoom() {
+    var data = getSelectionData();
+
+    if (data.date !== "" && data.session !== "0" && data.days.length > 0) {
+        $.post("xulyroom.php", data, function(res) {
+            $('#room_id').html(res);
+        });
+    } else {
+        resetRoom();
+    }
+}
+
+function loadTeacher() {
+    var data = getSelectionData();
+    data.room = $('#room_id').val();
+
+    if (data.room !== "0") {
+        $.post("xulyteacher.php", data, function(res) {
+            $('#teacher_id').html(res);
+        });
+    } else {
+        resetTeacher();
+    }
+}
+
+// Lắng nghe thêm sự kiện khi click vào các checkbox "Thứ"
+$('#date, #session_id, #ended, #chosen_end, input[name="check[]"]').change(loadRoom);
+$('#room_id').change(loadTeacher);
+
+  $('#course_id').change(function(){
+      $.post("../baitap/xulysubject.php",
+        {course:$(this).val()},
+        function(res){ $('#class_id').html(res); }
+      );
+  });
+
+  $('#class_id').change(function(){
+      $.post("../lop/xulycourse.php",
+        {course:$('#course_id').val()},
+        function(res){ $('#soTiet').val(res); }
+      );
+  });
+
+});
+</script>
+
 </body>
 </html>

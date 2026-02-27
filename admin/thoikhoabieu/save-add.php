@@ -1,20 +1,14 @@
-
- <?php 
+<?php 
 require_once '../../commons/utils.php';
+
 if($_SERVER['REQUEST_METHOD'] != 'POST'){
-	header('location: '. $ADMIN_URL .'thoikhoabieu');
-	die;
+    header('location: '. $ADMIN_URL .'thoikhoabieu');
+    die;
 }
-$created = $_POST['created'];
 
-$check = $_POST['check'];
-
-$i = 0;
-foreach($check as $row){
-    $i += 1;
-}
-$solan = $i;
-$sotiet = $_POST['soTiet'];
+$created = $_POST['created']; // Ngày bắt đầu
+$check = isset($_POST['check']) ? $_POST['check'] : []; // Mảng thứ trong tuần (1: Thứ 2, ..., 7: CN)
+$sotiet = (int)$_POST['soTiet']; // Tổng số buổi cần tạo
 
 $room = $_POST['room_id'];
 $teacher = $_POST['teacher_id'];
@@ -22,254 +16,79 @@ $session = $_POST['session_id'];
 $class = $_POST['class_id'];
 $course = $_POST['course_id'];
 
-if($class == "0"){
-    $c = "c=Chọn lớp&&";
-}else{
-    $c = "";
-}
+/* ================= VALIDATE ================= */
+$c = ($class == "0") ? "c=Chọn lớp&&" : "";
+$k = ($course == "0") ? "k=Chọn khóa học&&" : "";
+$cr = ($created == "") ? "cr=Chọn ngày bắt đầu&&" : "";
+$s = ($session == "0") ? "s=Chọn ca học&&" : "";
+$r = ($room == "0") ? "r=Chọn phòng học&&" : "";
+$t = ($teacher == "0") ? "t=Chọn giáo viên&&" : "";
+$th = (count($check) == 0) ? "th=Chọn thứ trong tuần" : "";
 
-if($course == "0"){
-    $k = "k=Chọn khóa học&&";
-}else{
-    $k = "";
-}
-
-if($created == ""){
-    $cr = "cr=Chọn ngày bắt đầu&&";
-}else{
-    $cr = "";
-}
-
-if($session == "0"){
-    $s = "s=Chọn ca học&&";
-}else{
-    $s = "";
-}
-
-if($room == "0"){
-    $r = "r=Chọn phòng học&&";
-}else{
-    $r = "";
-}
-
-if($teacher == "0"){
-    $t = "t=Chọn giáo viên&&";
-}else{
-    $t = "";
-}
-
-if($solan == "0"){
-    $th = "th=Chọn thứ trong tuần";
-}else{
-    $th = "";
-}
-
-
-if($c !="" || $k != "" || $cr !="" || $s !="" || $r !="" || $t !="" || $th !=""){
+if($c || $k || $cr || $s || $r || $t || $th){
     header('location: '.$ADMIN_URL.'thoikhoabieu/add.php?'.$c.$k.$cr.$s.$r.$t.$th);
     die;
 }
 
+// Sắp xếp mảng thứ để tính toán chính xác
+sort($check);
 
-// kiem tra xem ten co bi trong hay khong
-// if($name == ""){
-// 	header('location: '. $ADMIN_URL .'lop/add.php?errName=Vui lòng không để trống tên lớp học');
-// 	die;
-// }
-// Kiem tra ten co bi trung hay khong
-// $sql = "select * from classes where name = '$name'";
-// $rs = getSimpleQuery($sql);
-// if($rs != false){
-// 	header('location: '. $ADMIN_URL .'lop/add.php?errName=Tên lớp học đã tồn tại, vui lòng chọn tên khác');
-// 	die;
-// }
+/* ================= THUẬT TOÁN SINH LỊCH CHÍNH XÁC ================= */
 
+$insertedCount = 0;
+$currentDate = new DateTime($created);
 
-// $sql = $conn->prepare("insert into classes (name , course_id , created_at) values (?, ?,?)");
-// $data = array($name,$des, $created);
-// $sql->execute($data);
+// Lặp cho đến khi đủ số tiết (số buổi học)
+while($insertedCount < $sotiet){
+    
+    // Lấy thứ hiện tại của ngày đang xét (1 cho Thứ 2, ..., 7 cho Chủ Nhật)
+    // N trong PHP date format: 1 (Mon) -> 7 (Sun)
+    $currentDayOfWeek = (int)$currentDate->format('N');
 
-// $sql = "select * from classes order by id desc";
-// $rs = getSimpleQuery($sql);
+    // Kiểm tra xem thứ hiện tại có nằm trong danh sách được chọn không
+    if(in_array($currentDayOfWeek, $check)){
+        
+        $name = $currentDate->format('Y-m-d');
 
-//  Lưu thời khóa biểu
-			$ngay = $created;
-            $sl = $sotiet;
+        // CHỈ CHẶN: Nếu Lớp này đã có lịch vào ngày/ca này
+        $sqlCheckClass = "SELECT id FROM timetable 
+                  WHERE day = '$name' 
+                  AND session_id = '$session' 
+                  AND class_id = '$class'";
+        
+        if(!getSimpleQuery($sqlCheckClass)){
+            // Thực hiện INSERT vào timetable
+            $sqlInsert = $conn->prepare("INSERT INTO timetable (day, course_id, class_id, room_id, teacher_id, session_id) VALUES (?, ?, ?, ?, ?, ?)");
+            $sqlInsert->execute([$name, $course, $class, $room, $teacher, $session]);
 
-            $chuoi = explode("-",$ngay);
-            $year = $chuoi[0];
-            $month = $chuoi[1];
-            $day = $chuoi[2];
-            $jd = cal_to_jd(CAL_GREGORIAN,$month,$day,$year);
-            $day1 = jddayofweek($jd,0);
-            $check[0];
-
-            $l = 1;
-            $n = 1;
-            for($i = 0; $i<$sl; $i++){
-                $date = date_create($ngay);
-
-                if($n == 1){
-					date_modify($date,"+".(($check[0]-$day1) >= 0 ? ($check[0]-$day1) : 7 + ($check[0]-$day1))." days");
-                    $n = 2;
-                }else{
-
-                        if($solan == 1){
-                                date_modify($date,"+7 days");
-                        }else if($solan == 2){
-                            if($l == 1){
-                                date_modify($date,"+".($check[1]-$check[0])." days");
-                                $l = 2;
-                            }else{
-                                date_modify($date,"+".(7-($check[1]-$check[0]))." days");
-                                $l = 1;
-                            }
-                        }else if($solan == 3){
-                            if($l == 1){
-                                date_modify($date,"+".($check[1]-$check[0])." days");
-                                $l = 2;
-                            }else if($l == 2){
-                                date_modify($date,"+".($check[2]-$check[1])." days");
-                                $l = 3;
-                            }else{
-                                date_modify($date,"+".(7-(($check[1]-$check[0])+($check[2]-$check[1])))." days");
-                                $l = 1;
-                            }
-                        }else if($solan == 4){
-                            if($l == 1){
-                                date_modify($date,"+".($check[1]-$check[0])." days");
-                                $l = 2;
-                            }else if($l == 2){
-                                date_modify($date,"+".($check[2]-$check[1])." days");
-                                $l = 3;
-                            }else if($l == 3){
-                                date_modify($date,"+".($check[3]-$check[2])." days");
-                                $l = 4;
-                            }else{
-                                date_modify($date,"+".(7-(($check[1]-$check[0])+($check[2]-$check[1])+($check[3]-$check[2])))." days");
-                                $l = 1;
-                            }
-                        }else if($solan == 5){
-                            if($l == 1){
-                                date_modify($date,"+".($check[1]-$check[0])." days");
-                                $l = 2;
-                            }else if($l == 2){
-                                date_modify($date,"+".($check[2]-$check[1])." days");
-                                $l = 3;
-                            }else if($l == 3){
-                                date_modify($date,"+".($check[3]-$check[2])." days");
-                                $l = 4;
-                            }else if($l == 4){
-                                date_modify($date,"+".($check[4]-$check[3])." days");
-                                $l = 5;
-                            }else{
-                                date_modify($date,"+".(7-(($check[1]-$check[0])+($check[2]-$check[1])+($check[3]-$check[2])+($check[4]-$check[3])))." days");
-                                $l = 1;
-                            }
-                        }else if($solan == 6){
-                            if($l == 1){
-                                date_modify($date,"+".($check[1]-$check[0])." days");
-                                $l = 2;
-                            }else if($l == 2){
-                                date_modify($date,"+".($check[2]-$check[1])." days");
-                                $l = 3;
-                            }else if($l == 3){
-                                date_modify($date,"+".($check[3]-$check[2])." days");
-                                $l = 4;
-                            }else if($l == 4){
-                                date_modify($date,"+".($check[4]-$check[3])." days");
-                                $l = 5;
-                            }else if($l == 5){
-                                date_modify($date,"+".($check[5]-$check[4])." days");
-                                $l = 6;
-                            }else{
-                                date_modify($date,"+".(7-(($check[1]-$check[0])+($check[2]-$check[1])+($check[3]-$check[2])+($check[4]-$check[3])+($check[5]-$check[4])))." days");
-                                $l = 1;
-                            }
-                        }else{
-                            date_modify($date,"+1 days");
-                        }
+            // TẠO BẢNG ĐIỂM DANH CHO LỚP
+            $listStu = getSimpleQuery("SELECT student_id FROM dangky WHERE class_id = '$class' AND status = 1", true);
+            if($listStu){
+                foreach($listStu as $row){
+                    $st_id = $row['student_id'];
+                    // Insert vào student_check theo cấu trúc bảng của bạn
+                    $sqlCheckIn = $conn->prepare("INSERT INTO student_check (student_id, teacher_id, day, class_id, status, num_check) VALUES (?, ?, ?, ?, 0, -1)");
+                    $sqlCheckIn->execute([$st_id, $teacher, $name, $class]);
                 }
+            }
+            $insertedCount++;
+            $lastDayCreated = $name;
+        }
+    }
 
+    // Nhảy sang ngày tiếp theo để kiểm tra
+    $currentDate->modify('+1 day');
+    
+    // Tránh vòng lặp vô tận nếu có lỗi (giới hạn tìm kiếm trong 2 năm)
+    if($currentDate > (new DateTime($created))->modify('+2 years')) break;
+}
 
-                echo $name = date_format($date,"Y-m-d");
-                $chuoi = explode("-",$name);
-                $year = $chuoi[0];
-                $month = $chuoi[1];
-                $day = $chuoi[2];
-                $jd = cal_to_jd(CAL_GREGORIAN,$month,$day,$year);
-                $day1 = jddayofweek($jd,0);
+/* ================= CẬP NHẬT THÔNG TIN LỚP HỌC ================= */
 
-                switch($day1){
-                    case 1:
-                    $thu = "thu 2";
-                    break;
-                    case 2:
-                    $thu = "thu 3";
-                    break;
-                    case 3:
-                    $thu = "thu 4";
-                    break;
-                    case 4:
-                    $thu = "thu 5";
-                    break;
-                    case 5:
-                    $thu = "thu 6";
-                    break;
-                    case 6:
-                    $thu = "thu 7";
-                    break;
-                    default:
-                    $thu = "cn";
-                }
-                echo $thu."<br>";
-				$ngay = $name;
-                
-                if(isset($_POST['ended'])){
-                    if($ngay < $_POST['ended']){
-                        $sql = $conn->prepare("insert into timetable values ('', ?, ?,?,?,?,?)");
-                        $data = array($name,$course,$class,$room,$teacher,$session);
-                        $sql->execute($data);
-
-                        echo  $class;
-                        $listStuQuery = "SELECT * FROM dangky INNER join student on dangky.student_id = student.id where class_id = '$class' and status = 1 ";
-                        $stu = getSimpleQuery($listStuQuery,true);
-
-                        foreach($stu as $row){
-                            $student_id = $row['student_id']." <br>";
-                            $sql = $conn->prepare("insert into student_check values ('', '$student_id', '','$name','','$class','-1')");
-                            $sql->execute();
-                        }
-                    }
-                }else{
-				
-                    $sql = $conn->prepare("insert into timetable values ('', ?, ?,?,?,?,?)");
-                    $data = array($name,$course,$class,$room,$teacher,$session);
-                    $sql->execute($data);
-                    
-                    echo  $class;
-                    $listStuQuery = "SELECT * FROM dangky INNER join student on dangky.student_id = student.id where class_id = '$class' and status = 1 ";
-                    $stu = getSimpleQuery($listStuQuery,true);
-
-                    foreach($stu as $row){
-                        $student_id = $row['student_id']." <br>";
-                        $sql = $conn->prepare("insert into student_check values ('', '$student_id', '','$name','','$class','-1')");
-                        $sql->execute();
-                    }
-                }
-			}
-
-			$sql = "select * from timetable order by id desc";
-			$rs = getSimpleQuery($sql);
-			echo $ended = $rs['day'];
-
-			$sql = $conn->prepare("update classes set created_at = '$created' , ended_at = '$ended' where id = '$class'");
-			$data = array();
-			$sql->execute($data);
-
-// Kết thúc lưu thời khóa biểu
+if(isset($lastDayCreated)){
+    $sqlUpdateClass = $conn->prepare("UPDATE classes SET created_at = ?, ended_at = ? WHERE id = ?");
+    $sqlUpdateClass->execute([$created, $lastDayCreated, $class]);
+}
 
 header('location: '. $ADMIN_URL . 'thoikhoabieu?success=true');
 die;
- ?>
- 
