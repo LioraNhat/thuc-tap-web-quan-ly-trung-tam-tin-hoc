@@ -58,7 +58,7 @@ $sql = "select *
 $users = getSimpleQuery($sql);
 $user = $users['id'];
 
-$sql = "insert into dangky values ('','$user', '$course_id', '$class_id','$created_at')";
+$sql = "INSERT INTO dangky (student_id, course_id, class_id, created_at) VALUES ('$user', '$course_id', '$class_id', '$created_at')";
  getSimpleQuery($sql);
 
  $sql = "insert into scores 

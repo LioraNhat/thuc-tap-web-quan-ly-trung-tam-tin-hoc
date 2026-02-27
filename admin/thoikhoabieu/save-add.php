@@ -61,12 +61,18 @@ while($insertedCount < $sotiet){
             $sqlInsert = $conn->prepare("INSERT INTO timetable (day, course_id, class_id, room_id, teacher_id, session_id) VALUES (?, ?, ?, ?, ?, ?)");
             $sqlInsert->execute([$name, $course, $class, $room, $teacher, $session]);
 
-            // TẠO BẢNG ĐIỂM DANH CHO LỚP
-            $listStu = getSimpleQuery("SELECT student_id FROM dangky WHERE class_id = '$class' AND status = 1", true);
+            // Sử dụng JOIN để lấy student_id từ bảng dangky NHƯNG kiểm tra status từ bảng student
+            $sqlGetStudents = "SELECT d.student_id 
+                            FROM dangky d 
+                            JOIN student s ON d.student_id = s.id 
+                            WHERE d.class_id = '$class' AND s.status = 1";
+            
+            $listStu = getSimpleQuery($sqlGetStudents, true);
+
             if($listStu){
                 foreach($listStu as $row){
                     $st_id = $row['student_id'];
-                    // Insert vào student_check theo cấu trúc bảng của bạn
+                    // Insert vào student_check (status = 0 là chưa điểm danh, num_check = -1 là mặc định)
                     $sqlCheckIn = $conn->prepare("INSERT INTO student_check (student_id, teacher_id, day, class_id, status, num_check) VALUES (?, ?, ?, ?, 0, -1)");
                     $sqlCheckIn->execute([$st_id, $teacher, $name, $class]);
                 }
