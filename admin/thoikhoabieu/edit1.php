@@ -46,6 +46,11 @@ $teacher = getSimpleQuery($listTeaQuery,true);
   <div class="content-wrapper">
     <!-- Content Header (Page header) -->
     <section class="content-header">
+      <?php if(isset($_GET['err'])): ?>
+      <div class="alert alert-danger" style="margin: 15px;">
+          <i class="fa fa-ban"></i> <?= $_GET['err'] ?>
+      </div>
+      <?php endif; ?>
       <h1>
         Sửa buổi học
       </h1>
@@ -120,7 +125,7 @@ $teacher = getSimpleQuery($listTeaQuery,true);
           <input type="hidden" id="tea" name="tea" class="form-control" value="<?php echo $teacher_t ?>">
           <input type="hidden" name="id" class="form-control" value="<?php echo $_GET['id']; ?>">
               <a href="<?= $ADMIN_URL?>thoikhoabieu" class="btn btn-danger btn-xs">Huỷ</a>
-              <button type="submit" class="btn btn-xs btn-primary">Tạo mới</button>
+              <button type="submit" class="btn btn-xs btn-primary">Cập nhật</button>
             </div>
           </div>
             <!-- /.box-body -->

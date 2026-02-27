@@ -366,27 +366,39 @@
 
 <?php include_once $path.'_share/script_assets.php'; ?> 
 <script type="text/javascript">
-    <?php 
-      if(isset($_GET['success']) && $_GET['success'] == true){
-    ?> 
-       swal('Tạo mới lịch học thành công!');
-    <?php }else if(isset($_GET['editsuccess']) && $_GET['editsuccess'] == true){ ?>
-      swal('Sửa lịch học thành công!');
-    <?php }?>
-    $('.btn-remove').on('click',function(){
-      swal({
-      title: "Cảnh báo!",
-      text: "Bạn có chắc chắn muốn xoá môn học này ?",
-      icon: "warning",
-      buttons: true,
-      dangerMode: true,
-    })
-    .then((willDelete) => {
-      if (willDelete) {
-        window.location.href = $(this).attr('linkurl');
-      }
-      });
-    })
+    $(document).ready(function() {
+        // Kiểm tra thông báo thành công
+        <?php if(isset($_GET['success']) && $_GET['success'] == 'true'): ?>
+            swal('Tạo mới lịch học thành công!', '', 'success');
+            removeParam('success');
+        <?php elseif(isset($_GET['editsuccess']) && $_GET['editsuccess'] == 'true'): ?>
+            swal('Sửa lịch học thành công!', '', 'success');
+            removeParam('editsuccess');
+        <?php endif; ?>
+
+        // Hàm xóa tham số trên URL mà không làm tải lại trang
+        function removeParam(param) {
+            let url = new URL(window.location.href);
+            url.searchParams.delete(param);
+            window.history.replaceState({}, document.title, url.pathname + url.search);
+        }
+
+        // Sự kiện xóa
+        $('.btn-remove').on('click', function() {
+            swal({
+                title: "Cảnh báo!",
+                text: "Bạn có chắc chắn muốn xoá môn học này ?",
+                icon: "warning",
+                buttons: true,
+                dangerMode: true,
+            })
+            .then((willDelete) => {
+                if (willDelete) {
+                    window.location.href = $(this).attr('linkurl');
+                }
+            });
+        });
+    });
 </script>
  
 </body>

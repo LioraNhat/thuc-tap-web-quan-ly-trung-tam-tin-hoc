@@ -1,25 +1,34 @@
 <?php 
     $path = "../";
     require_once $path.$path.'commons/utils.php';
+    
     $date = $_POST['date'];
-    $lop = $_POST['lop'];
     $session = $_POST['session'];
-    $roo = $_POST['roo'];
+    $room_id_old = $_POST['roo']; // ID phòng hiện tại
 
-    $sql = "select * from timetable where day = '$date' and session_id = '$session'";
-    $query = getSimpleQuery($sql,true);
+    $sql = "SELECT room_id FROM timetable WHERE day = '$date' AND session_id = '$session'";
+    $query = getSimpleQuery($sql, true);
 
-    $noi = "where ";
-    foreach($query as $i => $row){
-        if($row['room_id'] != $roo){
-        $room[$i] = $row['room_id'];
-        $noi .= " id <> ".$room[$i]." and "; 
+    $exclude_ids = [];
+    if(is_array($query)){
+        foreach($query as $row){
+            // Chỉ loại bỏ những phòng KHÔNG PHẢI là phòng hiện tại của buổi học này
+            if($row['room_id'] != $room_id_old){
+                $exclude_ids[] = $row['room_id'];
+            }
         }
     }
 
-    $sql1 = "select * from rooms ".$noi." status = 1";
-    $query1 = getSimpleQuery($sql1,true);
+    $noi = "";
+    if(!empty($exclude_ids)){
+        $noi = " AND id NOT IN (" . implode(',', $exclude_ids) . ")";
+    }
+
+    $sql1 = "SELECT * FROM rooms WHERE status = 1" . $noi;
+    $query1 = getSimpleQuery($sql1, true);
+
     foreach($query1 as $row1){
-        echo "<option value='".$row1['id']."'>".$row1['name']."</option>";
+        $selected = ($row1['id'] == $room_id_old) ? "selected" : "";
+        echo "<option value='".$row1['id']."' $selected>".$row1['name']."</option>";
     }
 ?>
