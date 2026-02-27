@@ -139,8 +139,14 @@ $users = getSimpleQuery($sql, true);
       if(isset($_GET['success']) && $_GET['success'] == true){
     ?> 
        swal('Tạo mới nhân viên thành công!');
+       .then(() => {
+          window.history.replaceState(null, null, window.location.pathname);
+        });
     <?php }else if(isset($_GET['editsuccess']) && $_GET['editsuccess'] == true){ ?>
       swal('Sửa nhân viên thành công!');
+      .then(() => {
+          window.history.replaceState(null, null, window.location.pathname);
+      });
     <?php }?>
    $('.btn-remove').on('click', function(){
     swal({
