@@ -36,7 +36,7 @@
           </ul>
         </li>
         <?php foreach($user as $row){ ?>
-        <li class="menu">
+        <li class="treeview">
           <a href="<?php echo $ADMIN_URL.$row['link']; ?>">
           <i class="<?= $row['icons']; ?>"></i> <span><?= $row['name']; ?></span>
             <!--<span class="pull-right-container">-->

@@ -41,3 +41,21 @@
 <!--<script src="<?php echo $ADMIN_ASSET_URL; ?>dist/js/jquery-3.3.1.min.js"></script>
 <script src="<?php echo $ADMIN_ASSET_URL; ?>dist/js/jquery.js"></script>-->
 <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+
+<script>
+$(document).ready(function () {
+    /**
+     * Tự động active menu dựa trên URL hiện tại
+     */
+    var url = window.location.href;
+
+    // 1. Xử lý cho các menu đơn và menu cha (treeview)
+    $('.sidebar-menu a').filter(function () {
+        // Kiểm tra xem href của thẻ a có khớp với URL hiện tại không
+        return this.href == url || url.includes(this.href);
+    }).parentsUntil(".sidebar-menu", "li").addClass('active');
+
+    // 2. Mở rộng menu đa cấp nếu có phần tử con đang active
+    $('.treeview-menu li.active').closest('.treeview').addClass('active menu-open');
+});
+</script>
