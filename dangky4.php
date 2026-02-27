@@ -6,9 +6,9 @@ $email = $_POST['email'];
 $class_id = $_POST['class_id'];
 $course_id = $_POST['course_id'];
 $created_at = date("Y/m/d");
-$class = $_POST['class'];
-$course = $_POST['course'];
 $id = $_POST['id'];
+$teacher = 0;
+$diemTB = 0;
 
 if($fullname == ""){
     $n = "n=Nhập họ tên&&";
@@ -17,7 +17,7 @@ if($fullname == ""){
 }
 
 if($phone == ""){
-    $p = "p=Nhập số điệnt thoại&&";
+    $p = "p=Nhập số điện thoại&&";
 }else if(is_numeric($phone)==false || strlen($phone) != 10){
     $p = "p=Số điện thoại phải là số và 10 kí tự&&";
 }else{
@@ -61,13 +61,13 @@ $sql = "select *
 $users = getSimpleQuery($sql);
 $user = $users['id'];
 
-$sql = "insert into dangky values ('','$user', '$course_id', '$class_id','$created_at')";
+$sql = "insert into dangky(student_id, course_id, class_id, created_at) values ('$user', '$course_id', '$class_id','$created_at')";
  getSimpleQuery($sql);
 
  $sql = "insert into scores 
-			(student_id, course_id)
+			(student_id, course_id, teacher_id, diemTB)
 		values 
-			('$user', '$course_id')";
+			('$user', '$course_id', '$teacher', '$diemTB')";
  getSimpleQuery($sql);
 
 header('location: '. SITE_URL .'course.php?id='.$id.'&&?success=true');
