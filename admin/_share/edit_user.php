@@ -26,7 +26,7 @@ require_once $path.$path.'commons/utils.php';
         <small>NextTech Acadamy</small>
       </h1>
       <ol class="breadcrumb">
-        <li><a href="#"><i class="fa fa-dashboard"></i> Trang chủ</a></li>
+        <li><a href="<?= $ADMIN_URL ?>"><i class="fa fa-dashboard"></i> Trang chủ</a></li>
         <li class="active">Trang chủ</li>
       </ol>
     </section>
@@ -102,7 +102,7 @@ require_once $path.$path.'commons/utils.php';
             </div>
             </div>
                 <div>
-                    <a name="<?= $ADMIN_URL ?>danh-muc" id="" class="btn btn-danger btn-xs" href="#" role="button">Hủy</a>
+                    <a name="<?= $ADMIN_URL ?>danh-muc" id="" class="btn btn-danger btn-xs" href="<?= $ADMIN_URL ?>" role="button">Hủy</a>
                     <button type="submit" name="" class="btn btn-xs btn-primary">Cập nhật</button>
                 </div>
         </form>

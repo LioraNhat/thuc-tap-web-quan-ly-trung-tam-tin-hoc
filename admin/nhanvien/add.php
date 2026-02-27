@@ -31,73 +31,124 @@ require_once $path.$path.'commons/utils.php';
      <!-- Main content -->
     <section class="content">
       <form action="<?= $ADMIN_URL ?>nhanvien/save-add.php" method="post">
+        <div class="row">
+          <div class="col-md-6">
+            <div class="form-group">
+              <label>Email</label>
+              <input type="text" name="email" class="form-control">
+              <?php 
+                if(isset($_GET['e'])){
+                  ?>
+                  <span class="text-danger"><?= $_GET['e'] ?></span>
+                  <?php
+                }
+              ?>
+            </div>
+            <div class="form-group">
+              <label>Tên đầy đủ</label>
+              <input type="text" name="fullname" class="form-control">
+              <?php 
+                if(isset($_GET['n'])){
+                  ?>
+                  <span class="text-danger"><?= $_GET['n'] ?></span>
+                  <?php
+                }
+              ?>
+            </div>
+            <!-- Địa chỉ -->
+            <div class="form-group">
+              <label>Địa chỉ</label>
+              <input type="text" name="address" class="form-control">
+              <?php 
+                if(isset($_GET['a'])){
+                  ?>
+                  <span class="text-danger"><?= $_GET['a'] ?></span>
+                  <?php
+                }
+              ?>
+            </div>
+            <!-- Số điện thoại -->
+            <div class="form-group">
+              <label>Số điện thoại</label>
+              <input type="number" name="phone_number" class="form-control">
+              <?php 
+                if(isset($_GET['ph'])){
+                  ?>
+                  <span class="text-danger"><?= $_GET['ph'] ?></span>
+                  <?php
+                }
+              ?>
+            </div>
+
+            <div class="text-center">
+              <a href="<?= $ADMIN_URL?>nhanvien" class="btn btn-danger btn-xs">Huỷ</a>
+              <button type="submit" class="btn btn-xs btn-primary">Tạo mới</button>
+            </div>
+
+          </div>
         <div class="col-md-6">
-          <div class="form-group">
-            <label>Email</label>
-            <input type="text" name="email" class="form-control">
-            <?php 
-              if(isset($_GET['e'])){
-                ?>
-                <span class="text-danger"><?= $_GET['e'] ?></span>
-                <?php
-              }
-             ?>
-          </div>
-          <div class="form-group">
-            <label>Tên đầy đủ</label>
-            <input type="text" name="fullname" class="form-control">
-            <?php 
-              if(isset($_GET['n'])){
-                ?>
-                <span class="text-danger"><?= $_GET['n'] ?></span>
-                <?php
-              }
-             ?>
-          </div>
-          <div class="form-group">
-            <label>Mật khẩu</label>
-            <input type="password" name="password" class="form-control">
-            <?php 
-              if(isset($_GET['p'])){
-                ?>
-                <span class="text-danger"><?= $_GET['p'] ?></span>
-                <?php
-              }
-             ?>
-          </div>
-          <div class="form-group">
-            <label>Xác nhận mật khẩu</label>
-            <input type="password" name="cfpassword" class="form-control">
-            <?php 
-              if(isset($_GET['cp'])){
-                ?>
-                <span class="text-danger"><?= $_GET['cp'] ?></span>
-                <?php
-              }
-             ?>
-          </div>
-          <div class="form-group">
-            <label>Phân quyền</label>
-            <select name="role" class="form-control">
-              <?php foreach (USER_ROLES as $key => $value): ?>
-                <option value="<?= $value ?>"><?= $key ?></option>
-              <?php endforeach ?>
-            </select>
-            <?php 
-              if(isset($_GET['r'])){
-                ?>
-                <span class="text-danger"><?= $_GET['r'] ?></span>
-                <?php
-              }
-             ?>
-          </div>
-          <div class="text-right">
-            <a href="<?= $ADMIN_URL?>nhanvien" class="btn btn-danger btn-xs">Huỷ</a>
-            <button type="submit" class="btn btn-xs btn-primary">Tạo mới</button>
-          </div>
-         </div>
+          <!-- Giới tính -->
+           <div class="form-group">
+              <label>Giới tính</label> <br>
+              <label>
+                <input type="radio" name="gender" value="1" checked> Nam
+              </label>
+              <label style="margin-left: 15px;">
+                <input type="radio" name="gender" value="-1"> Nữ
+              </label>
+              <?php 
+                if(isset($_GET['ge'])){
+                  ?>
+                  <span class="text-danger"><?= $_GET['ge'] ?></span>
+                  <?php
+                }
+              ?>
+            </div>
+            <!-- Mật khẩu -->
+            <div class="form-group">
+              <label>Mật khẩu</label>
+              <input type="password" name="password" class="form-control">
+              <?php 
+                if(isset($_GET['p'])){
+                  ?>
+                  <span class="text-danger"><?= $_GET['p'] ?></span>
+                  <?php
+                }
+              ?>
+            </div>
+            <!-- Xác nhận mật khẩu -->
+             <div class="form-group">
+              <label>Xác nhận mật khẩu</label>
+              <input type="password" name="cfpassword" class="form-control">
+              <?php 
+                if(isset($_GET['cp'])){
+                  ?>
+                  <span class="text-danger"><?= $_GET['cp'] ?></span>
+                  <?php
+                }
+              ?>
+            </div>
+            <!-- Phân quyền -->
+             <div class="form-group">
+              <label>Phân quyền</label>
+              <select name="role" class="form-control">
+                <?php foreach (USER_ROLES as $key => $value): ?>
+                  <option value="<?= $value ?>"><?= $key ?></option>
+                <?php endforeach ?>
+              </select>
+              <?php 
+                if(isset($_GET['r'])){
+                  ?>
+                  <span class="text-danger"><?= $_GET['r'] ?></span>
+                  <?php
+                }
+              ?>
+            </div>
+        </div>
+      </div>
+          
       </form>
-     </section>
+    </section>
     <!-- /.content -->
   </div>
   <!-- /.content-wrapper -->
