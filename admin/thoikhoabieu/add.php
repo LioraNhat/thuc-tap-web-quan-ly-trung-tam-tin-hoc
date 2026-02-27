@@ -36,6 +36,13 @@ $teacher = getSimpleQuery($listTeaQuery, true);
 <div class="content-wrapper">
 
 <section class="content-header">
+  <?php if(isset($_GET['err'])): ?>
+  <div class="alert alert-danger alert-dismissible" style="margin: 15px;">
+      <button type="button" class="close" data-dismissible="alert" aria-hidden="true">×</button>
+      <h4><i class="icon fa fa-ban"></i> Lỗi trùng lịch!</h4>
+      <?= $_GET['err'] ?>
+  </div>
+  <?php endif; ?>
   <h1>Thêm lịch học</h1>
   <ol class="breadcrumb">
     <li><a href="#"><i class="fa fa-dashboard"></i> Home</a></li>
@@ -181,7 +188,7 @@ $teacher = getSimpleQuery($listTeaQuery, true);
 </div>
 
 <div class="box-footer">
-  <a href="<?= $ADMIN_URL?>lop" class="btn btn-danger">Huỷ</a>
+  <a href="<?= $ADMIN_URL?>thoikhoabieu" class="btn btn-danger">Huỷ</a>
   <button type="submit" class="btn btn-primary">Tạo mới</button>
 </div>
 

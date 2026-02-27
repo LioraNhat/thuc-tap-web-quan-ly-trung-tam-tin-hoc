@@ -40,47 +40,81 @@ $currentDate = new DateTime($created);
 
 // Lặp cho đến khi đủ số tiết (số buổi học)
 while($insertedCount < $sotiet){
-    
-    // Lấy thứ hiện tại của ngày đang xét (1 cho Thứ 2, ..., 7 cho Chủ Nhật)
-    // N trong PHP date format: 1 (Mon) -> 7 (Sun)
+
+    // Lấy thứ hiện tại (1 = Thứ 2 ... 7 = Chủ nhật)
     $currentDayOfWeek = (int)$currentDate->format('N');
 
-    // Kiểm tra xem thứ hiện tại có nằm trong danh sách được chọn không
+    // Nếu thứ này được chọn
     if(in_array($currentDayOfWeek, $check)){
-        
+
         $name = $currentDate->format('Y-m-d');
 
-        // CHỈ CHẶN: Nếu Lớp này đã có lịch vào ngày/ca này
+        /* ================= BƯỚC 1: KIỂM TRA GIÁO VIÊN CÓ Ở PHÒNG KHÁC KHÔNG ================= */
+
+        $sqlCheckTeacherLocation = "SELECT r.name as room_name 
+                                    FROM timetable t 
+                                    JOIN rooms r ON t.room_id = r.id
+                                    WHERE t.day = '$name' 
+                                    AND t.session_id = '$session' 
+                                    AND t.teacher_id = '$teacher'
+                                    AND t.room_id != '$room'";
+
+        $teacherInOtherRoom = getSimpleQuery($sqlCheckTeacherLocation);
+
+        if($teacherInOtherRoom){
+            $busyRoom = $teacherInOtherRoom['room_name'];
+            header('location: '.$ADMIN_URL.'thoikhoabieu/add.php?err=Giáo viên đang dạy ở phòng '.$busyRoom.' trong ca này. Không thể phân thân!');
+            die;
+        }
+
+        /* ================= BƯỚC 2: KIỂM TRA LỚP CÓ BỊ TRÙNG LỊCH KHÔNG ================= */
+
         $sqlCheckClass = "SELECT id FROM timetable 
-                  WHERE day = '$name' 
-                  AND session_id = '$session' 
-                  AND class_id = '$class'";
-        
+                          WHERE day = '$name' 
+                          AND session_id = '$session' 
+                          AND class_id = '$class'";
+
         if(!getSimpleQuery($sqlCheckClass)){
-            // Thực hiện INSERT vào timetable
-            $sqlInsert = $conn->prepare("INSERT INTO timetable (day, course_id, class_id, room_id, teacher_id, session_id) VALUES (?, ?, ?, ?, ?, ?)");
+
+            /* ================= INSERT VÀO TIMETABLE ================= */
+
+            $sqlInsert = $conn->prepare("
+                INSERT INTO timetable 
+                (day, course_id, class_id, room_id, teacher_id, session_id) 
+                VALUES (?, ?, ?, ?, ?, ?)
+            ");
             $sqlInsert->execute([$name, $course, $class, $room, $teacher, $session]);
 
-            // Sử dụng JOIN để lấy student_id từ bảng dangky NHƯNG kiểm tra status từ bảng student
+            /* ================= TẠO ĐIỂM DANH ================= */
+
             $sqlGetStudents = "SELECT d.student_id 
-                            FROM dangky d 
-                            JOIN student s ON d.student_id = s.id 
-                            WHERE d.class_id = '$class' AND s.status = 1";
-            
+                               FROM dangky d 
+                               JOIN student s ON d.student_id = s.id 
+                               WHERE d.class_id = '$class' 
+                               AND s.status = 1";
+
             $listStu = getSimpleQuery($sqlGetStudents, true);
 
             if($listStu){
                 foreach($listStu as $row){
                     $st_id = $row['student_id'];
-                    // Insert vào student_check (status = 0 là chưa điểm danh, num_check = -1 là mặc định)
-                    $sqlCheckIn = $conn->prepare("INSERT INTO student_check (student_id, teacher_id, day, class_id, status, num_check) VALUES (?, ?, ?, ?, 0, -1)");
+
+                    $sqlCheckIn = $conn->prepare("
+                        INSERT INTO student_check 
+                        (student_id, teacher_id, day, class_id, status, num_check) 
+                        VALUES (?, ?, ?, ?, 0, -1)
+                    ");
                     $sqlCheckIn->execute([$st_id, $teacher, $name, $class]);
                 }
             }
+
             $insertedCount++;
             $lastDayCreated = $name;
         }
     }
+
+    // Sang ngày tiếp theo
+    $currentDate->modify('+1 day');
 
     // Nhảy sang ngày tiếp theo để kiểm tra
     $currentDate->modify('+1 day');
