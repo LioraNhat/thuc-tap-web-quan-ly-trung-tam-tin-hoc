@@ -39,7 +39,7 @@ $page = getSimpleQuery($listVideoQuery);
                         <img src="<?php echo SITE_URL.$page['image']; ?>" alt="">
                      </div>
                      <div class="col-md-6 pt-2">
-                     <p><?php echo $page['tomtat']; ?></p>
+                     <p class="text-justify"><?php echo $page['tomtat']; ?></p>
                         <a name="" id="" class="btn btn-primary" href="introduct.php" role="button">Xem thêm</a>
                      </div>
                  </div>
@@ -48,16 +48,16 @@ $page = getSimpleQuery($listVideoQuery);
 
          <div class="container-fluid py-4" style="background: #f7f7f7;">
                 <div class="container py-4">
-                       <h2  class="text-center">GIẢNG VIÊN NASAO </h2>
+                       <h2  class="text-center">GIẢNG VIÊN NEXTTECH </h2>
                     <div class="row py-4">
                             <div class="owl-carousel owl-theme">
                                 <?php foreach($teas as $row){ ?>
                                     <div class="item shadow-sm">
                                         <div class="card border-none">
-                                        <img src="<?= SITE_URL.$row['avatar']  ?>" alt="">
+                                        <img src="<?= SITE_URL.$row['avatar']  ?>" class="card-img-top w-100" style="height:250px; object-fit:cover;" alt="">
                                           <div class="card-body">
                                           <h5 class="card-title text-center">Giáo viên:</h5>
-                                            <h4 class="card-title text-center"><?= $row['fullname'] ?></h4>
+                                            <h5 class="card-title text-center"><?= $row['fullname'] ?></h5>
                                           </div>
                                         </div>
                                     </div>
@@ -70,14 +70,14 @@ $page = getSimpleQuery($listVideoQuery);
 
             <div class="container-fluid py-4 bg-white">
                     <div class="container py-4">
-                        <h2 class="text-center">KHÓA HỌC NASAO MỚI</h2>
+                        <h2 class="text-center">KHÓA HỌC NEXTTECH MỚI</h2>
                             <div class="row my-4">
                             <?php foreach($cates1 as $row){ ?>
                                 <div class="card border-none col-md-3 rounded">
-                                 <a href="course.php?id=<?= $row['id']; ?>"><img class="card-img-top" src="<?= SITE_URL.$row['image']  ?>" alt=""></a> 
+                                 <a href="course.php?id=<?= $row['id']; ?>"><img class="card-img-top w-100" style="height:150px;" src="<?= SITE_URL.$row['image']  ?>" alt=""></a> 
                                   <div class="card-body px-0">
-                                  <a href="course.php?id=<?= $row['id']; ?>"> <h4 class="card-title text-center text-dark"><?= $row['name']  ?></h4></a>
-                                    <p class="card-text"><?= $row['tomtat']  ?></p>
+                                  <a href="course.php?id=<?= $row['id']; ?>"> <h4 class="card-title text-center text-dark overflow-hidden" style="height:60px;"><?= $row['name']  ?></h4></a>
+                                    <p class="card-text text-justify"><?= $row['tomtat']  ?></p>
                                   </div>
                                 </div>
                                 <?php } ?>
@@ -91,7 +91,7 @@ $page = getSimpleQuery($listVideoQuery);
                         <div class="row">
                             <div class="col-md-7">
                                 <h1 class="text-danger">ĐĂNG KÝ LỘ TRÌNH HỌC TẬP</h1>
-                                <p><i>Hãy để lại thông tin của bạn, ACET sẽ giúp xây dựng lộ trình Anh ngữ tốt nhất dành riêng cho bạn.</i></p>
+                                <p><i>Hãy để lại thông tin của bạn, NEXTTECH sẽ giúp xây dựng lộ trình học ngôn ngữ lập trình tốt nhất dành riêng cho bạn.</i></p>
                                 <?php  
                                 echo $page['video'];
                                 ?>
