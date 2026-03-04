@@ -453,7 +453,7 @@ class TCPDFBarcode {
 		$k = 0;
 		$clen = strlen($code);
 		for ($i = 0; $i < $clen; ++$i) {
-			$char = $code{$i};
+			$char = $code[$i];
 			if(!isset($chr[$char])) {
 				// invalid character
 				return false;
@@ -464,7 +464,7 @@ class TCPDFBarcode {
 				} else {
 					$t = false; // space
 				}
-				$w = $chr[$char]{$j};
+				$w = $chr[$char][$j];
 				$bararray['bcode'][$k] = array('t' => $t, 'w' => $w, 'h' => 1, 'p' => 0);
 				$bararray['maxw'] += $w;
 				++$k;
@@ -520,10 +520,10 @@ class TCPDFBarcode {
 		$code_ext = '';
 		$clen = strlen($code);
 		for ($i = 0 ; $i < $clen; ++$i) {
-			if (ord($code{$i}) > 127) {
+			if (ord($code[$i]) > 127) {
 				return false;
 			}
-			$code_ext .= $encode[$code{$i}];
+			$code_ext .= $encode[$code[$i]];
 		}
 		return $code_ext;
 	}
@@ -543,7 +543,7 @@ class TCPDFBarcode {
 		$sum = 0;
 		$clen = strlen($code);
 		for ($i = 0 ; $i < $clen; ++$i) {
-			$k = array_keys($chars, $code{$i});
+			$k = array_keys($chars, $code[$i]);
 			$sum += $k[0];
 		}
 		$j = ($sum % 43);
@@ -643,10 +643,10 @@ class TCPDFBarcode {
 		$code_ext = '';
 		$clen = strlen($code);
 		for ($i = 0 ; $i < $clen; ++$i) {
-			if (ord($code{$i}) > 127) {
+			if (ord($code[$i]) > 127) {
 				return false;
 			}
-			$code_ext .= $encode[$code{$i}];
+			$code_ext .= $encode[$code[$i]];
 		}
 		// checksum
 		$code_ext .= $this->checksum_code93($code_ext);
@@ -656,7 +656,7 @@ class TCPDFBarcode {
 		$k = 0;
 		$clen = strlen($code);
 		for ($i = 0; $i < $clen; ++$i) {
-			$char = ord($code{$i});
+			$char = ord($code[$i]);
 			if(!isset($chr[$char])) {
 				// invalid character
 				return false;
@@ -667,7 +667,7 @@ class TCPDFBarcode {
 				} else {
 					$t = false; // space
 				}
-				$w = $chr[$char]{$j};
+				$w = $chr[$char][$j];
 				$bararray['bcode'][$k] = array('t' => $t, 'w' => $w, 'h' => 1, 'p' => 0);
 				$bararray['maxw'] += $w;
 				++$k;
@@ -699,7 +699,7 @@ class TCPDFBarcode {
 		$p = 1;
 		$check = 0;
 		for ($i = ($len - 1); $i >= 0; --$i) {
-			$k = array_keys($chars, $code{$i});
+			$k = array_keys($chars, $code[$i]);
 			$check += ($k[0] * $p);
 			++$p;
 			if ($p > 20) {
@@ -713,7 +713,7 @@ class TCPDFBarcode {
 		$p = 1;
 		$check = 0;
 		for ($i = $len; $i >= 0; --$i) {
-			$k = array_keys($chars, $code{$i});
+			$k = array_keys($chars, $code[$i]);
 			$check += ($k[0] * $p);
 			++$p;
 			if ($p > 15) {
@@ -738,11 +738,11 @@ class TCPDFBarcode {
 		$len = strlen($code);
 		$sum = 0;
 		for ($i = 0; $i < $len; $i+=2) {
-			$sum += $code{$i};
+			$sum += $code[$i];
 		}
 		$sum *= 3;
 		for ($i = 1; $i < $len; $i+=2) {
-			$sum += ($code{$i});
+			$sum += ($code[$i]);
 		}
 		$r = $sum % 10;
 		if($r > 0) {
@@ -783,7 +783,7 @@ class TCPDFBarcode {
 			$p = 2;
 			$check = 0;
 			for ($i = ($clen - 1); $i >= 0; --$i) {
-				$check += (hexdec($code{$i}) * $p);
+				$check += (hexdec($code[$i]) * $p);
 				++$p;
 				if ($p > 7) {
 					$p = 2;
@@ -798,7 +798,7 @@ class TCPDFBarcode {
 		$seq = '110'; // left guard
 		$clen = strlen($code);
 		for ($i = 0; $i < $clen; ++$i) {
-			$digit = $code{$i};
+			$digit = $code[$i];
 			if (!isset($chr[$digit])) {
 				// invalid character
 				return false;
@@ -841,7 +841,7 @@ class TCPDFBarcode {
 		$seq = '11011010';
 		$clen = strlen($code);
 		for ($i = 0; $i < $clen; ++$i) {
-			$digit = $code{$i};
+			$digit = $code[$i];
 			if (!isset($chr[$digit])) {
 				// invalid character
 				return false;
@@ -867,8 +867,8 @@ class TCPDFBarcode {
 		$k = 0;
 		for ($i = 0; $i < $len; ++$i) {
 			$w += 1;
-			if (($i == ($len - 1)) OR (($i < ($len - 1)) AND ($seq{$i} != $seq{($i+1)}))) {
-				if ($seq{$i} == '1') {
+			if (($i == ($len - 1)) OR (($i < ($len - 1)) AND ($seq[$i] != $seq[($i+1)]))) {
+				if ($seq[$i] == '1') {
 					$t = true; // bar
 				} else {
 					$t = false; // space
@@ -919,8 +919,8 @@ class TCPDFBarcode {
 		$k = 0;
 		$clen = strlen($code);
 		for ($i = 0; $i < $clen; $i = ($i + 2)) {
-			$char_bar = $code{$i};
-			$char_space = $code{$i+1};
+			$char_bar = $code[$i];
+			$char_space = $code[$i+1];
 			if((!isset($chr[$char_bar])) OR (!isset($chr[$char_space]))) {
 				// invalid character
 				return false;
@@ -929,7 +929,7 @@ class TCPDFBarcode {
 			$seq = '';
 			$chrlen = strlen($chr[$char_bar]);
 			for ($s = 0; $s < $chrlen; $s++){
-				$seq .= $chr[$char_bar]{$s} . $chr[$char_space]{$s};
+				$seq .= $chr[$char_bar][$s] . $chr[$char_space][$s];
 			}
 			$seqlen = strlen($seq);
 			for ($j = 0; $j < $seqlen; ++$j) {
@@ -938,7 +938,7 @@ class TCPDFBarcode {
 				} else {
 					$t = false; // space
 				}
-				$w = $seq{$j};
+				$w = $seq[$j];
 				$bararray['bcode'][$k] = array('t' => $t, 'w' => $w, 'h' => 1, 'p' => 0);
 				$bararray['maxw'] += $w;
 				++$k;

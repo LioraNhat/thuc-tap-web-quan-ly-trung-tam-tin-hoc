@@ -44,18 +44,26 @@
 
 <script>
 $(document).ready(function () {
-    /**
-     * Tự động active menu dựa trên URL hiện tại
-     */
-    var url = window.location.href;
+    var currentUrl = window.location.href.split('#')[0];
 
-    // 1. Xử lý cho các menu đơn và menu cha (treeview)
-    $('.sidebar-menu a').filter(function () {
-        // Kiểm tra xem href của thẻ a có khớp với URL hiện tại không
-        return this.href == url || url.includes(this.href);
-    }).parentsUntil(".sidebar-menu", "li").addClass('active');
+    // 1. Xử lý Active Menu
+    $('.sidebar-menu a').each(function () {
+        if (this.href === currentUrl || currentUrl.indexOf(this.href) >= 0) {
+            $(this).parent().addClass('active');
+            $(this).closest('.treeview').addClass('active menu-open');
+        }
+    });
 
-    // 2. Mở rộng menu đa cấp nếu có phần tử con đang active
-    $('.treeview-menu li.active').closest('.treeview').addClass('active menu-open');
+    // 2. Fix nhảy Sidebar (Sử dụng LocalStorage)
+    var sidebar = $('.sidebar'); 
+    var scrollPos = localStorage.getItem('sidebar_scroll_position');
+    
+    if (scrollPos) {
+        sidebar.scrollTop(scrollPos);
+    }
+
+    $('.sidebar-menu a').on('click', function () {
+        localStorage.setItem('sidebar_scroll_position', sidebar.scrollTop());
+    });
 });
 </script>
