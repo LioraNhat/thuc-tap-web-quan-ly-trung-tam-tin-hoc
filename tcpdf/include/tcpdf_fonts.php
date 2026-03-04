@@ -1664,6 +1664,14 @@ class TCPDF_FONTS {
 	 * @public static
 	 */
 	public static function unichr($c, $unicode=true) {
+
+		// FIX cho PHP 8
+		if ($c === '' || $c === null) {
+			return '';
+		}
+
+		$c = (int)$c;
+
 		if (!$unicode) {
 			return chr($c);
 		} elseif ($c <= 0x7F) {
@@ -1671,13 +1679,19 @@ class TCPDF_FONTS {
 			return chr($c);
 		} elseif ($c <= 0x7FF) {
 			// two bytes
-			return chr(0xC0 | $c >> 6).chr(0x80 | $c & 0x3F);
+			return chr(0xC0 | $c >> 6) .
+				chr(0x80 | $c & 0x3F);
 		} elseif ($c <= 0xFFFF) {
 			// three bytes
-			return chr(0xE0 | $c >> 12).chr(0x80 | $c >> 6 & 0x3F).chr(0x80 | $c & 0x3F);
+			return chr(0xE0 | $c >> 12) .
+				chr(0x80 | $c >> 6 & 0x3F) .
+				chr(0x80 | $c & 0x3F);
 		} elseif ($c <= 0x10FFFF) {
 			// four bytes
-			return chr(0xF0 | $c >> 18).chr(0x80 | $c >> 12 & 0x3F).chr(0x80 | $c >> 6 & 0x3F).chr(0x80 | $c & 0x3F);
+			return chr(0xF0 | $c >> 18) .
+				chr(0x80 | $c >> 12 & 0x3F) .
+				chr(0x80 | $c >> 6 & 0x3F) .
+				chr(0x80 | $c & 0x3F);
 		} else {
 			return '';
 		}
