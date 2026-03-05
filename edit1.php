@@ -163,22 +163,30 @@ $teacher = getSimpleQuery($listTeaQuery,true);
                 }
 
                 function load1(){
-                    $.ajax({
-                        url:"xulyteacher.1.php",
-                        method:"post",
-                        data: {
-                            date: date,
-                            lop: lop,
-                            session: session,
-                            tea: tea, // tea ở đây chính là $teacher_t (ID giáo viên cũ)
-                            is_edit: 1 // Gửi thêm cờ báo hiệu đây là chế độ sửa
-                        },
-                        dataType:"text",
-                        success: function(kq){
-                            $('#teacher_id').html(kq);
-                        }
-                    }); 
+                  var date = $('#date').val();
+                  var session = $('#session_id').val();
+                  var roo = $('#room_id').val();
+                  var tea = $('#tea').val();
+
+                  $.ajax({
+                      url: "xulyteacher.1.php",
+                      method: "post",
+                      data: {
+                          date: date,
+                          session: session,
+                          roo: roo,
+                          tea: tea
+                      },
+                      success: function(kq){
+                          $('#teacher_id').html(kq);
+                      }
+                  });
                 }
+
+// Thêm sự kiện khi thay đổi phòng học thì load lại danh sách giáo viên
+$('#room_id').change(function(){
+    load1();
+});
                 
                 $('#session_id').change(function(){
                                 var date = $('#date').val();
@@ -201,22 +209,7 @@ $teacher = getSimpleQuery($listTeaQuery,true);
                 })
 
                 $('#room_id').change(function(){
-                                var date = $('#date').val();
-                                var lop = $('#class_id').val();
-                                var session = $('#session_id').val();
-                                var tea =  $('#tea').val();
-                                $.ajax({
-                                    url:"xulyteacher.1.php",
-                                    method:"post",
-                                    data: {date:date,
-                                      lop:lop,
-                                      session:session,
-                                      tea:tea},
-                                    dataType:"text",
-                                    success: function(kq){
-                                        $('#teacher_id').html(kq);
-                                    }
-                                  }); 
+                                load1();
                 })
             });
           </script>

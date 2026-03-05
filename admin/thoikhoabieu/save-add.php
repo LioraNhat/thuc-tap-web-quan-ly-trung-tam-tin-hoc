@@ -115,9 +115,6 @@ while($insertedCount < $sotiet){
 
     // Sang ngày tiếp theo
     $currentDate->modify('+1 day');
-
-    // Nhảy sang ngày tiếp theo để kiểm tra
-    $currentDate->modify('+1 day');
     
     // Tránh vòng lặp vô tận nếu có lỗi (giới hạn tìm kiếm trong 2 năm)
     if($currentDate > (new DateTime($created))->modify('+2 years')) break;

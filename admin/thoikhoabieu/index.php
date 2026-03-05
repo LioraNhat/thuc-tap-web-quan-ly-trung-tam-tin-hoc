@@ -1,405 +1,287 @@
 <?php 
     $path = "../";
     require_once $path.$path.'commons/utils.php';
-    $day = date("Y/m/d");
-    $listTeaQuery = "select * from teachers";
-    $teacher1 = getSimpleQuery($listTeaQuery,true);
-    $listCateQuery =   "select *
-                    from courses";
-    $course1 = getSimpleQuery($listCateQuery,true);
-    $listClassQuery = "select * from classes ";
-    $class1 = getSimpleQuery($listClassQuery,true);
+    $day = date("Y-m-d");
 
-  if(isset($_POST['gui'])){
-    $course = $_POST['course_id'];
-    $class = $_POST['class_id'];
+    // 1. Load dữ liệu cho các dropdown
+    $teachers = getSimpleQuery("SELECT * FROM teachers", true);
+    $courses  = getSimpleQuery("SELECT * FROM courses", true);
+    $classes  = getSimpleQuery("SELECT * FROM classes", true);
+    $rooms    = getSimpleQuery("SELECT * FROM rooms", true);
+    $sessions = getSimpleQuery("SELECT * FROM session", true);
 
-    if($_POST['chucnang']==2 && $course != "0" && $class != "0"){
+    // 2. Định nghĩa câu truy vấn gốc
+    $baseSelect = "SELECT t.*, c.name as course_name, cl.name as class_name, 
+                          r.name as room_name, te.fullname as teacher_name, 
+                          s.name as session_name, s.time as session_time
+                   FROM timetable t
+                   JOIN courses c ON t.course_id = c.id
+                   JOIN classes cl ON t.class_id = cl.id
+                   JOIN rooms r ON t.room_id = r.id
+                   JOIN teachers te ON t.teacher_id = te.id
+                   JOIN session s ON t.session_id = s.id ";
 
-        $sql = "delete from student_check WHERE class_id  = $class";
-        getSimpleQuery($sql);
+    // 3. XỬ LÝ LỌC ĐA NĂNG
+    $where = ["1=1"]; 
 
-        $sql = "delete from timetable where class_id = $class and course_id = $course";
-        getSimpleQuery($sql);
-
-      header("Location:".$ADMIN_URL."thoikhoabieu");
-
-    }else if($_POST['chucnang']==1 && $course != "0" && $class != "0"){
-
-        $listCheckQuery = "select * from timetable where course_id = $course and class_id = $class";
-        $check = getSimpleQuery($listCheckQuery);
-        $id =  $check['id'];
-        header("Location:".$ADMIN_URL."thoikhoabieu/edit.php?id=".$id);
-
-    }else if($_POST['chucnang']==3){
-
-      $sqk= $sqc ="";
-      if($_POST['course_id'] == "0" && $_POST['class_id']=="0"){
-        header("Location:".$ADMIN_URL."thoikhoabieu");
-      }
-      if($_POST['course_id'] == "0"){
-        $sqk = " where ";
-      }else{
-        $course = $_POST['course_id'];
-        $sqk = " where course_id = '$course' and ";
-      }
-
-      if($_POST['class_id'] == 0){
-        $sqc = " day > '$day' ";
-      }else{
-        $class = $_POST['class_id'];
-        $sqc = "  class_id = '$class' and day > '$day' ";
-      }
-
-      $listRoomQuery = "select * from timetable ".$sqk.$sqc;
-      $cates = getSimpleQuery($listRoomQuery,true);
-
-
-      $listTieQuery = "select * from timetable where day = '$day'";
-      $Tie = getSimpleQuery($listTieQuery,true);
-      
-    }else{
-        header("Location:".$ADMIN_URL."thoikhoabieu");
-    }
-  }else{
-    $listRoomQuery = "select * from timetable where day > '$day'  order by day ";
-    $cates = getSimpleQuery($listRoomQuery,true);
-
-    $listTieQuery = "select * from timetable where day = '$day' ";
-    $Tie = getSimpleQuery($listTieQuery,true);
-  }
-
-  if(isset($_POST['tk'])){
-    $sqd = $sqt ="";
-    if($_POST['day'] == "" && $_POST['teacher_id']=="0"){
-      header("Location:".$ADMIN_URL."thoikhoabieu");
-    }
-    if($_POST['day'] == ""){
-      $sqd = " where ";
-    }else{
-      $day = $_POST['day'];
-      $sqd = " where day = '$day' and ";
+    if(isset($_POST['filter'])){
+        if(!empty($_POST['f_date']))    $where[] = "t.day = '" . $_POST['f_date'] . "'";
+        if($_POST['f_course'] > 0)      $where[] = "t.course_id = " . (int)$_POST['f_course'];
+        // Lưu ý: f_class cần được xử lý qua Ajax nếu bạn muốn lọc theo lớp cụ thể của khóa học
+        if(isset($_POST['f_class']) && $_POST['f_class'] > 0) $where[] = "t.class_id = " . (int)$_POST['f_class'];
+        if($_POST['f_teacher'] > 0)     $where[] = "t.teacher_id = " . (int)$_POST['f_teacher'];
+        if($_POST['f_room'] > 0)        $where[] = "t.room_id = " . (int)$_POST['f_room'];
+        if($_POST['f_session'] > 0)     $where[] = "t.session_id = " . (int)$_POST['f_session'];
+        
+        $sqlFilter = $baseSelect . " WHERE " . implode(" AND ", $where) . " ORDER BY t.day ASC";
+        $cates = getSimpleQuery($sqlFilter, true);
+    } else {
+        $cates = getSimpleQuery($baseSelect . " WHERE t.day >= '$day' ORDER BY t.day ASC", true);
     }
 
-    if($_POST['teacher_id'] == 0){
-      $sqt = " day >= '$day' ";
-    }else{
-      $teacher = $_POST['teacher_id'];
-      $sqt = "  teacher_id = '$teacher'";
-    }
+    $todayList = getSimpleQuery($baseSelect . " WHERE t.day = '$day'", true);
 
-    $listRoomQuery = "select * from timetable ".$sqd.$sqt." order by day ";
-    $cates = getSimpleQuery($listRoomQuery,true);
-    
-  }
- ?>
+    // Hàm tính thứ
+    function tinhthu($ngay) {
+        $date = strtotime($ngay);
+        $days = ["Chủ nhật", "Thứ hai", "Thứ ba", "Thứ tư", "Thứ năm", "Thứ sáu", "Thứ bảy"];
+        return $days[date('w', $date)];
+    }
+?>
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="utf-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <title>POLY | Danh mục</title>
-  <?php include_once $path.'_share/style_assets.php'; ?>
+    <meta charset="utf-8">
+    <title>Quản lý Thời khóa biểu</title>
+    <?php include_once $path.'_share/style_assets.php'; ?>
 </head>
 <body class="hold-transition skin-blue sidebar-mini">
 <div class="wrapper">
-  <?php include_once $path.'_share/header.php'; ?>
-  
-  <?php include_once $path.'_share/sidebar.php'; ?>
-  
+    <?php include_once $path.'_share/header.php'; ?>
+    <?php include_once $path.'_share/sidebar.php'; ?>
 
-  <!-- Content Wrapper. Contains page content -->
-  <div class="content-wrapper">
-    <!-- Content Header (Page header) -->
-    <section class="content-header">
-      <h1>
-        DANH SÁCH
-        <small>Thời khóa biểu</small>
-      </h1>
-      <ol class="breadcrumb">
-        <li><a href="#"><i class="fa fa-dashboard"></i> Home</a></li>
-        <li class="active">Danh sách môn học</li>
-      </ol>
-    </section>
+    <div class="content-wrapper">
+        <section class="content-header">
+            <h1>DANH SÁCH <small>Thời khóa biểu</small></h1>
+        </section>
 
-    <!-- Main content -->
-    <section class="content">
-      
-            <div class="row">
-                <div class="col-xs-12">
-                <div class="box">
+        <section class="content">
+            <div class="box">
                 <div class="box-header">
-              <h3 class="box-title">Thời khóa biểu 
-              <?php if($_SESSION['login']['role']==500){ ?>
-              <a href="<?= $ADMIN_URL ?>thoikhoabieu/add.php"
-                      class="btn btn-xs btn-success"
-                      >
-                      <i class="fa fa-plus"></i> Thêm
-                    </a>
-              <?php } ?>
+                    <h3 class="box-title">Thời khóa biểu 
+                        <a href="<?= $ADMIN_URL ?>thoikhoabieu/add.php" class="btn btn-xs btn-success"><i class="fa fa-plus"></i> Thêm</a>
                     </h3>
-
-            <!-- /.box-header -->
-            <div class="box-body">
-            
-            <h3>Lịch hôm nay</h3>
-            <table class="table table-bordered">
-                <tbody id="oday">
-                <tr>
-                  <th>Ngày</th>
-                  <th>Khóa học</th>
-                  <th>Lớp học</th>
-                  <th>Phòng học</th>
-                  <th>Giáo viên</th>
-                  <th>Ca học</th>
-                  <?php if($_SESSION['login']['role']==500 || $_SESSION['login']['role']==1){ ?>
-                  <th style="width: 190px">
-                  Điểm danh & Nhập điểm
-                  </th>
-                  <th>Chức năng</th>
-                  <?php } ?>
-                </tr>
-                <?php foreach($Tie as $row) { ?>
-                <tr>
-                  <td><?php echo tinhthu($row['day']).", ".$row['day']; ?></td>
-                  <td><?php $class =  $row['course_id']; 
-                      $listQuery = "select * from courses where id = $class";
-                      $c= getSimpleQuery($listQuery);
-                      echo $c['name'];
-                  ?></td>
-                  <td><?php $class =  $row['class_id']; 
-                      $listQuery = "select * from classes where id = $class";
-                      $c= getSimpleQuery($listQuery);
-                      echo $c['name'];
-                  ?></td>
-                  <td><?php 
-                    $class =  $row['room_id']; 
-                    $listQuery = "select * from rooms where id = $class";
-                    $c= getSimpleQuery($listQuery);
-                    echo $c['name'];
-                  ?></td>
-                  <td><?php 
-                      $class =  $row['teacher_id']; 
-                      $listQuery = "select * from teachers where id = $class";
-                      $c= getSimpleQuery($listQuery);
-                      echo $c['fullname']; ?></td>
-                  <td><?php 
-                    $class =  $row['session_id']; 
-                    $listQuery = "select * from session where id = $class";
-                    $c= getSimpleQuery($listQuery);
-                    echo $c['name'].' ('.$c['time'].')';
-                  ?></td>
-                  </td>
-                  <?php if($_SESSION['login']['role']==500 || $_SESSION['login']['role']==1){ ?>
-                  <td>
-                  <a href="<?= $ADMIN_URL?>lop/check.php?class_id=<?= $row['class_id']?>&&day=<?= $row['day'] ?>"
-                      class="btn btn-xs btn-link"
-                      ><i class="fa fa-check-square-o"></i> Điểm danh</a>
-                      <a href="<?= $ADMIN_URL?>lop/mark.php?id=<?= $row['class_id']?>"
-                      class="btn btn-xs btn-link"
-                      >
-                      <i class="fa fa-pencil-square-o"></i>  Nhập điểm
-                      </a>
-                 </td>
-                  <?php } ?>
-                  <td>
-                  <a href="<?= $ADMIN_URL?>thoikhoabieu/edit1.php?id=<?= $row['id']?>"
-                      class="btn btn-xs btn-primary"
-                      >
-                      <i class="fa fa-cog"></i>  Sửa
-                      </a>
-                      <a href="javascript:;"
-                        linkurl="<?= $ADMIN_URL?>thoikhoabieu/xoa.php?id=<?= $row['id']?>"
-                      class="btn btn-xs btn-danger btn-remove"
-                      >
-                      <i class="fa fa-trash-o"></i> Xoá
-                      </a>
-                 </td>
-                </tr>
-                <?php } ?>
-              </tbody>
-              </table>
-
-
-
-
-            <div class="jumbotron" style="padding-top:10px;padding-bottom:10px; margin-bottom:20px; margin-top:10px;">
-              <form class="form-inline" action="" method="post" style="float:left">
-              <div class="form-group"  style="margin-left:10px;">
-              <select class="form-control" name="course_id" id="course_id">
-                  <option value="0">--Chọn khóa học--</option>
-                                                  <?php foreach($course1 as $row){ ?>
-                                                      <option value="<?php echo $row['id']; ?>"><?php echo $row['name']; ?></option>
-                                                  <?php } ?>
-                                                  </select>
-              </div>
-                <div class="form-group" style="margin-left:5px;">
-                  <select class="form-control" name="class_id" id="class_id">
-                <option value="0">--Chọn lớp học--</option>
-                                                <?php foreach($class1 as $row){ ?>
-                                                    <option value="<?php echo $row['id']; ?>"><?php echo $row['name']; ?></option>
-                                                <?php } ?>
-                                                </select>
                 </div>
-                <div class="form-group" style="margin-left:5px;">
-                  <select class="form-control" name="chucnang" id="chucnang">
-                  <option value="0">--Chọn chức năng--</option>
-            <?php if($_SESSION['login']['role']==500){ ?>
-                    <option value="1">Sửa</option>
-                    <option value="2">Xóa</option>
-            <?php  } ?>
-                    <option value="3">Tìm kiếm</option>
-                  </select>
-                </div>
-                <div class="form-group" style="margin-left:5px;">
-                  <button type="submit" name="gui" id="gui" class="btn btn-primary">Thực hiện</button>
-                </div>
-                </form>
-                <input type="hidden" id="sql" name="sql" value="<?php echo $listRoomQuery ?>">
-              <form class="form-inline" action="" method="post">
-              <div class="form-group"  style="margin-left:40px;">
-               <input type="date" class="form-control" name="day">
-              </div>
-                <div class="form-group" style="margin-left:5px;">
-                <select class="form-control" name="teacher_id" id="teacher_id">
-                <option value="0">--Chọn giáo viên--</option>
-                                                <?php foreach($teacher1 as $row){ ?>
-                                                    <option value="<?php echo $row['id']; ?>"><?php echo $row['fullname']; ?></option>
-                                                <?php } ?>
-                                                </select>
-                </div>
-                <div class="form-group"  style="margin-left:5px;">
-                  <button type="submit" name="tk" id="gui" class="btn btn-primary">Tìm kiếm</button>
-                </div>
-                </form>
-            </div>
-            <h3>Lịch tiếp theo</h3>
-              <table class="table table-bordered" id="example2">
-                <tbody id="oday1">
-                
-                </tbody>
-              </table>
-            </div>
-            <!-- /.box-body -->
-          </div>
+                <div class="box-body">
+                    <h3>Lịch hôm nay</h3>
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Ngày</th>
+                                <th>Khóa học</th>
+                                <th>Lớp học</th>
+                                <th>Phòng</th>
+                                <th>Giáo viên</th>
+                                <th>Ca học</th>
+                                <th>Điểm danh</th>
+                                <th>Chức năng</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach($todayList as $row): ?>
+                            <tr>
+                                <td><?= tinhthu($row['day']).", ".$row['day'] ?></td>
+                                <td><?= $row['course_name'] ?></td>
+                                <td><?= $row['class_name'] ?></td>
+                                <td><?= $row['room_name'] ?></td>
+                                <td><?= $row['teacher_name'] ?></td>
+                                <td><?= $row['session_name'].' ('.$row['session_time'].')' ?></td>
+                                <td>
+                                    <a href="<?= $ADMIN_URL?>lop/check.php?class_id=<?= $row['class_id']?>&day=<?= $row['day'] ?>" class="btn btn-xs btn-link">Điểm danh</a>
+                                </td>
+                                <td>
+                                    <a href="<?= $ADMIN_URL?>thoikhoabieu/edit1.php?id=<?= $row['id']?>" class="btn btn-xs btn-primary">Sửa</a>
+                                    <a href="javascript:;" linkurl="<?= $ADMIN_URL?>thoikhoabieu/xoa.php?id=<?= $row['id']?>" class="btn btn-xs btn-danger btn-remove">Xóa</a>
+                                </td>
+                            </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+
+                    <hr>
+                    <div class="box box-solid bg-gray-light" style="border: 1px solid #d2d6de;">
+                      <div class="box-body">
+                          <form method="post" class="row">
+                              <div class="col-md-2 col-sm-4">
+                                  <label small>Ngày học</label>
+                                  <input type="date" name="f_date" class="form-control input-sm" value="<?= $_POST['f_date'] ?? '' ?>">
+                              </div>
+                              <div class="col-md-2 col-sm-4">
+                                  <label small>Khóa học</label>
+                                  <select name="f_course" id="course_id" class="form-control input-sm">
+                                      <option value="0">-- Tất cả --</option>
+                                      <?php foreach($courses as $r) {
+                                          $selected = (isset($_POST['f_course']) && $_POST['f_course'] == $r['id']) ? 'selected' : '';
+                                          echo "<option value='{$r['id']}' $selected>{$r['name']}</option>";
+                                      } ?>
+                                  </select>
+                              </div>
+                              <div class="col-md-2 col-sm-4">
+                                  <label small>Giáo viên</label>
+                                  <select name="f_teacher" class="form-control input-sm">
+                                      <option value="0">-- Tất cả --</option>
+                                      <?php foreach($teachers as $r) {
+                                          $selected = (isset($_POST['f_teacher']) && $_POST['f_teacher'] == $r['id']) ? 'selected' : '';
+                                          echo "<option value='{$r['id']}' $selected>{$r['fullname']}</option>";
+                                      } ?>
+                                  </select>
+                              </div>
+                              <div class="col-md-2 col-sm-4">
+                                  <label small>Phòng học</label>
+                                  <select name="f_room" class="form-control input-sm">
+                                      <option value="0">-- Tất cả --</option>
+                                      <?php foreach($rooms as $r) {
+                                          $selected = (isset($_POST['f_room']) && $_POST['f_room'] == $r['id']) ? 'selected' : '';
+                                          echo "<option value='{$r['id']}' $selected>{$r['name']}</option>";
+                                      } ?>
+                                  </select>
+                              </div>
+                              <div class="col-md-2 col-sm-4">
+                                  <label small>Ca học</label>
+                                  <select name="f_session" class="form-control input-sm">
+                                      <option value="0">-- Tất cả --</option>
+                                      <?php foreach($sessions as $r) {
+                                          $selected = (isset($_POST['f_session']) && $_POST['f_session'] == $r['id']) ? 'selected' : '';
+                                          echo "<option value='{$r['id']}' $selected>{$r['name']}</option>";
+                                      } ?>
+                                  </select>
+                              </div>
+                              <div class="col-md-2 col-sm-4">
+                                  <label>&nbsp;</label>
+                                  <button type="submit" name="filter" class="btn btn-sm btn-primary btn-block">
+                                      <i class="fa fa-filter"></i> Lọc lịch
+                                  </button>
+                              </div>
+                          </form>
+                      </div>
+                  </div>
+                  <div class="box-body"></div>
+                    <h3>Lịch tiếp theo</h3>
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Ngày</th>
+                                <th>Khóa học</th>
+                                <th>Lớp học</th>
+                                <th>Phòng</th>
+                                <th>Giáo viên</th>
+                                <th>Ca học</th>
+                                <th>Chức năng</th>
+                            </tr>
+                        </thead>
+                        <tbody id="oday1">
+                            <?php 
+                              $i = 0;
+                              foreach($cates as $row): 
+                              $classHidden = ($i >= 10) ? 'hidden-row' : '';
+                              ?>
+                            <tr class="<?= $classHidden ?>" <?= ($i >= 10) ? 'style="display:none"' : '' ?>>
+                                <td><?= tinhthu($row['day']).", ".$row['day'] ?></td>
+                                <td><?= $row['course_name'] ?></td>
+                                <td><?= $row['class_name'] ?></td>
+                                <td><?= $row['room_name'] ?></td>
+                                <td><?= $row['teacher_name'] ?></td>
+                                <td><?= $row['session_name'].' ('.$row['session_time'].')' ?></td>
+                                <td>
+                                    <a href="<?= $ADMIN_URL?>thoikhoabieu/edit1.php?id=<?= $row['id']?>" class="btn btn-xs btn-primary">Sửa</a>
+                                    <a href="javascript:;" linkurl="<?= $ADMIN_URL?>thoikhoabieu/xoa.php?id=<?= $row['id']?>" class="btn btn-xs btn-danger btn-remove">Xóa</a>
+                                </td>
+                            </tr>
+                            <?php $i++; endforeach; ?>
+                        </tbody>
+                    </table>
+                    <?php if (count($cates) > 10): ?>
+                        <div class="text-center" style="margin-top: 10px;">
+                            <button id="btn-show-more" class="btn btn-default btn-sm">
+                                <i class="fa fa-angle-double-down"></i> Xem thêm
+                            </button>
+                        </div>
+                    <?php endif; ?>
                 </div>
             </div>
-    </section>
-    <script type="text/javascript">
-            $(document).ready(function(){
-                $('#course_id').change(function(){
-                                var course = $('#course_id').val();
-                                $.ajax({
-                                    url:"../baitap/xulysubject.php",
-                                    method:"post",
-                                    data: {
-                                      course:course},
-                                    dataType:"text",
-                                    success: function(kq){
-                                        $('#class_id').html(kq);
-                                    }
-                                  }); 
-                }) 
-
-                        load_data();  
-                        function load_data(page){  
-                          var sql = $('#sql').val();
-                              $.ajax({  
-                                    url:"pagination.php",  
-                                    method:"POST",  
-                                    data:{page:page,
-                                    sql:sql},  
-                                    success:function(data){  
-                                        $('#oday1').html(data);  
-                                    }  
-                              })  
-                          }  
-                        $(document).on('click', '.pagination_link', function(){  
-                            var page = $(this).attr("id");  
-                            load_data(page);  
-                        });  
-            });
-          </script>
-    <?php  
-        function tinhthu($ngay){
-                $chuoi = explode("-",$ngay);
-                $nam = $chuoi[0];
-                $thang = $chuoi[1];
-                $ngay = $chuoi[2];
-
-
-            $jd = cal_to_jd(CAL_GREGORIAN,$thang,$ngay,$nam);
-            $day = jddayofweek($jd,0);
-            switch($day){
-                case 0:
-                $thu = "Chủ nhật";
-                break;
-                case 1:
-                $thu = "Thứ hai";
-                break;
-                case 2:
-                $thu = "Thứ ba";
-                break;
-                case 3:
-                $thu = "Thứ tư";
-                break;
-                case 4:
-                $thu = "Thứ năm";
-                break;
-                case 5:
-                $thu = "Thứ sáu";
-                break;
-                case 6:
-                $thu = "Thứ bảy";
-                break;
-            }
-            return $thu;
-        }
-    ?>
-    <!-- /.content -->
-  </div>
-  <!-- /.content-wrapper -->
-  
-  <?php include_once $path.'_share/footer.php'; ?>
+        </section>
+    </div>
+    <?php include_once $path.'_share/footer.php'; ?>
 </div>
-<!-- ./wrapper -->
 
-<?php include_once $path.'_share/script_assets.php'; ?> 
-<script type="text/javascript">
+<?php include_once $path.'_share/script_assets.php'; ?>
+<script>
     $(document).ready(function() {
-        // Kiểm tra thông báo thành công
-        <?php if(isset($_GET['success']) && $_GET['success'] == 'true'): ?>
-            swal('Tạo mới lịch học thành công!', '', 'success');
-            removeParam('success');
-        <?php elseif(isset($_GET['editsuccess']) && $_GET['editsuccess'] == 'true'): ?>
-            swal('Sửa lịch học thành công!', '', 'success');
-            removeParam('editsuccess');
-        <?php endif; ?>
-
-        // Hàm xóa tham số trên URL mà không làm tải lại trang
-        function removeParam(param) {
-            let url = new URL(window.location.href);
-            url.searchParams.delete(param);
-            window.history.replaceState({}, document.title, url.pathname + url.search);
-        }
-
-        // Sự kiện xóa
-        $('.btn-remove').on('click', function() {
+        // Xử lý XÓA bằng AJAX (Giữ nguyên giao diện)
+        $(document).on('click', '.btn-remove', function() {
+            let btn = $(this);
+            let url = btn.attr('linkurl');
             swal({
                 title: "Cảnh báo!",
-                text: "Bạn có chắc chắn muốn xoá môn học này ?",
+                text: "Bạn có chắc chắn muốn xoá?",
                 icon: "warning",
                 buttons: true,
                 dangerMode: true,
-            })
-            .then((willDelete) => {
+            }).then((willDelete) => {
                 if (willDelete) {
-                    window.location.href = $(this).attr('linkurl');
+                    $.ajax({
+                        url: url,
+                        type: 'GET',
+                        success: function() {
+                            swal("Xóa thành công!", { icon: "success" });
+                            btn.closest('tr').fadeOut(300); // Ẩn dòng vừa xóa
+                        },
+                        error: function() {
+                            swal("Lỗi!", "Không thể xóa dữ liệu.", "error");
+                        }
+                    });
                 }
             });
         });
+
+        // Tự động load lớp học theo khóa học (Ajax dropdown)
+        $('#course_id').change(function(){
+            var course = $(this).val();
+            $.post("../baitap/xulysubject.php", {course: course}, function(kq){
+                $('#class_id').html(kq);
+            });
+        });
+
+        var itemsToShow = 10;
+        $('#btn-show-more').on('click', function() {
+            // Lấy danh sách các dòng đang bị ẩn
+            var hiddenRows = $('.hidden-row:hidden');
+
+            // Lấy ra 10 dòng tiếp theo và hiển thị chúng
+            hiddenRows.slice(0, itemsToShow).fadeIn(300);
+
+            // Kiểm tra lại: Nếu không còn dòng nào bị ẩn nữa thì đổi nút thành "Thu gọn"
+            if ($('.hidden-row:hidden').length === 0) {
+                $(this).html('<i class="fa fa-angle-double-up"></i> Thu gọn');
+                $(this).data('all-shown', true);
+            }
+        });
+
+        // Logic bổ sung: Nếu đã hiện hết mà bấm lần nữa thì thu gọn về 10 dòng đầu
+        $(document).on('click', '#btn-show-more', function() {
+            if ($(this).data('all-shown') === true) {
+                $('.hidden-row').hide();
+                $(this).html('<i class="fa fa-angle-double-down"></i> Xem thêm');
+                $(this).data('all-shown', false);
+                
+                // Cuộn lên đầu bảng
+                $('html, body').animate({
+                    scrollTop: $("#oday1").offset().top - 150
+                }, 500);
+            }
+        
+      });
     });
 </script>
- 
 </body>
 </html>

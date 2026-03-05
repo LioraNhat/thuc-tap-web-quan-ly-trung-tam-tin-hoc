@@ -2,23 +2,23 @@
 require_once '../../commons/utils.php';
 
 if(!isset($_GET['id'])){
-    header("Location:".$ADMIN_URL."thoikhoabieu");
-    die;
+    http_response_code(400);
+    exit;
 }
 
-$id = intval($_GET['id']); // bảo mật hơn
+$id = intval($_GET['id']);
+$sql = "SELECT id FROM timetable WHERE id = $id";
+$check = getSimpleQuery($sql);
 
-$sql = "select * from timetable where id = $id";
-$cate = getSimpleQuery($sql);
-
-if(!$cate){
-    header("Location:".$ADMIN_URL."thoikhoabieu");
-    die;
+if(empty($check)){
+    http_response_code(404);
+    exit;
 }
 
-$sql = "delete from timetable where id = $id";
-getSimpleQuery($sql);
+// Thực hiện xóa
+getSimpleQuery("DELETE FROM timetable WHERE id = $id");
 
-header("Location:".$ADMIN_URL."thoikhoabieu?deletesuccess=true");
-die;
+// Trả về text để JavaScript biết là thành công
+echo "success";
+exit;
 ?>
