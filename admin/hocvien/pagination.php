@@ -38,7 +38,12 @@ $record_per_page = 8;
     <tr>  
          <td>'.$u['id'].'</td>  
          <td>'.$u['email'].'</td>  
-         <td>'.$u['fullname'].'</td>
+         <td>
+          <a href="'.$ADMIN_URL.'hocvien/detail.php?id='.$u['id'].'" 
+              style="color:#3c8dbc; font-weight:600;">
+              '.$u['fullname'].'
+          </a>
+        </td>
          <td>'.$u['address'].'</td>
          <td>'.$u['phone'].'</td>
          <td>

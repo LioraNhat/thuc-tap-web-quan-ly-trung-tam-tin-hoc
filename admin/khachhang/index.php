@@ -1,4 +1,5 @@
 <?php 
+/*
 $path = "../";
 require_once $path.$path.'commons/utils.php';
 $i = 0;
@@ -192,3 +193,4 @@ $users = getSimpleQuery($sql, true);
 </script>
  </body>
 </html>
+*/
