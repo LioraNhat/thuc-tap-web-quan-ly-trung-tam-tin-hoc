@@ -48,7 +48,7 @@ $cates = getSimpleQuery($listCateQuery,true);
             <div class="col-md-6">
                 <div class="form-group">
                     <label for="">Email</label>
-                    <input type="email" class="form-control" name="email" value="<?= $users['email']; ?>"  readonly>
+                    <input type="email" class="form-control" name="email" value="<?= $users['email']; ?>">
                 </div>
                 <div class="form-group">
                     <label for="">Họ và Tên</label>
@@ -87,7 +87,7 @@ $cates = getSimpleQuery($listCateQuery,true);
             <div class="col-md-6">
             <div class="form-group">
                     <label for="">Số điện thoại</label>
-                    <input type="text" class="form-control" name="phone" value="<?= $users['phone']; ?>">
+                    <input type="text" class="form-control" name="phone" value="<?= $users['phone']; ?>" readonly>
                     <?php  
                         if(isset($_GET['ph'])){
                     ?>

@@ -91,3 +91,5 @@ $e = $n = $ph = $a = $p = $cp=  "";
  getSimpleQuery($sql);
 header('location: '. $ADMIN_URL . 'giaovien?success=true');
 die;
+
+?>

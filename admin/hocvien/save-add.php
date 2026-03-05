@@ -4,22 +4,18 @@ require_once '../../commons/utils.php';
 	header('location: '. $ADMIN_URL .'hocvien');
 	die;
 }
- $email = trim($_POST['email']);
+$email = trim($_POST['email']);
 $fullname = trim($_POST['fullname']);
-$password = $_POST['password'];
-$cfpassword = $_POST['cfpassword'];
-$class_id = $_POST['class_id'];
-$course_id = $_POST['course_id'];
-$phone = $_POST['phone'];
-$created_at = date("Y/m/d");
-$sql = "select *
-        from classes where id = $class_id";
-$users = getSimpleQuery($sql);
-$course = $users['course_id'];
-$teacher = 0;
-$diemTB = 0;
+// $password = $_POST['password'];
+// $cfpassword = $_POST['cfpassword'];
+// $class_id = $_POST['class_id'];
+// $course_id = $_POST['course_id'];
+$address = trim($_POST['address']);
+$phone = trim($_POST['phone']);
+$ngaysinh = trim($_POST['ngaysinh']);
+$gender= trim($_POST['gender']);
 
-$e = $n = $p = $cp= $c = $ph = "";
+$e = $n = $a = $ph = $ns = $ge ="";
     if($email == ""){
         $e = "e=Nhập email&&";
     }else if(filter_var($email, FILTER_VALIDATE_EMAIL) == false ){
@@ -34,73 +30,69 @@ $e = $n = $p = $cp= $c = $ph = "";
         $n = "";
     }
 
-    if($password == ""){
-        $p = "p=Nhập passwword&&";
-    }else{
-        $p = "";
-	}
+    // if($password == ""){
+    //     $p = "p=Nhập passwword&&";
+    // }else{
+    //     $p = "";
+	// }
 
-	if($cfpassword == ""){
-        $cp = "cp=Nhập lại passwword&&";
-    }else if($cfpassword != $password){
-        $cp = "cp=Nhập trùng passwword&&";
-	}else{
-		$cp = "";
-    }
+	// if($cfpassword == ""){
+    //     $cp = "cp=Nhập lại passwword&&";
+    // }else if($cfpassword != $password){
+    //     $cp = "cp=Nhập trùng passwword&&";
+	// }else{
+	// 	$cp = "";
+    // }
 
-    if($class_id == "0"){
-        $c = "c=Chọn lớp&&";
-    }else{
-        $c = "";
-    }
+    $phone = trim($_POST['phone']);
 
-    if($course_id == "0"){
-        $k = "k=Chọn khóa học&&";
-    }else{
-        $k = "";
-    }
-    
     if($phone == ""){
-        $ph = "ph=Nhập số điện thoại";
+        $ph = "ph=Vui lòng nhập số điện thoại&&";
+    }else if(!preg_match('/^0[0-9]{9}$/', $phone)){
+        $ph = "ph=Số điện thoại phải gồm 10 số và bắt đầu bằng 0&&";
     }else{
         $ph = "";
-	}
-    
+    }
 
-	
+    if($address == ""){
+        $a = "a=Nhập địa chỉ&&";
+    }else{
+        $a = "";
+    }
 
-    if($e !="" || $n != "" || $p !="" || $cp !="" || $c !="" || $k !="" || $ph !=""){
-        header('location: '.$ADMIN_URL.'hocvien/add.php?'.$e.$n.$p.$cp.$k.$c.$ph);
+    if($ngaysinh == ""){
+        $ns = "ns=Vui lòng nhập ngày sinh&&";
+    }else{
+        $ns = "";
+    }
+
+    if($gender === ""){
+        $ge = "ge=Vui lòng chọn giới tính&&";
+    }else{
+        $ge = "";
+    }
+
+    if($e !="" || $n != "" || $a !="" || $ph !="" || $ns !="" || $ge !=""){
+        header('location: '.$ADMIN_URL.'hocvien/add.php?'.$e.$n.$a.$ph.$ns.$ge);
         die;
     }
 
- $password = password_hash($password, PASSWORD_DEFAULT);
+// Kiểm tra trùng phone
+$sql = "select * from student 
+        where phone = '$phone'";
 
- $sql = "insert into student 
-			(email, fullname, password,phone,status)
+$existUser = getSimpleQuery($sql);
+
+if($existUser){
+    header('location: '.$ADMIN_URL.'hocvien/add.php?e=Học viên đã tồn tại (trùng SĐT)');
+    die;
+}
+$sql = "insert into student 
+			(email, fullname, phone, address, avatar, gender, date, password, status, role)
 		values 
-			('$email', '$fullname', '$password','$phone','1')";
- getSimpleQuery($sql);
- 
-$sql = "select *
-        from student order by id desc limit 1";
-$users = getSimpleQuery($sql);
-$user = $users['id'];
-
-$sql = "insert into dangky(student_id, course_id, class_id, created_at) values ('$user', '$course', '$class_id','$created_at')";
- getSimpleQuery($sql);
-
-// $sql = "insert into orders 
-// 			(student_id, course_id)
-// 		values 
-// 			('$user', '$course')";
-//  getSimpleQuery($sql);
-
- $sql = "insert into scores 
-			(student_id, course_id, teacher_id, diemTB)
-		values 
-			('$user', '$course', '$teacher', '$diemTB')";
- getSimpleQuery($sql);
-
+			('$email', '$fullname', '$phone', '$address', NULL, '$gender', '$ngaysinh', NULL, 1, 0)";
+getSimpleQuery($sql);
 header('location: '. $ADMIN_URL . 'hocvien?success=true');
 die;
+
+?>
