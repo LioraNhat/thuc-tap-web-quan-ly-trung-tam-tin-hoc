@@ -68,7 +68,7 @@
                 <tr id="<?= $row['id']; ?>">
                   <td><?php echo $row['id']; ?></td>
                   <td><a href="<?php echo SITE_URL."/course.php?id=".$row['id']; ?>"><?php echo $row['name']; ?></a> </td>
-                  <td><img src="<?php echo SITE_URL.$row['image']; ?>" alt="" style="width:200px;"></td>
+                  <td><img src="<?php echo SITE_URL.$row['image']; ?>" alt="" style="width:180px; height: 130px;"></td>
                   <td><?php echo $row['soTiet']; ?></td>
                   <td><?php echo $row['hocphi']." VNĐ" ?></td>
                   <td><input type="button" name="view" value="<?php echo $row['total']." lớp học"; ?>" id="<?php echo $row["id"]; ?>" class="btn btn-link view_data" /></td>

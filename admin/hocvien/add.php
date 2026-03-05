@@ -48,9 +48,9 @@
             <!-- /.box-header -->
             <div class="box-body">
             <form action="<?= $ADMIN_URL ?>hocvien/save-add.php" method="post" enctype="multipart/form-data">
-        <div class="row">
-                 <div class="col-md-6">
-                 <div class="form-group">
+      <div class="row">
+        <div class="col-md-6">
+          <div class="form-group">
             <label>Email</label>
             <input type="text" name="email" class="form-control">
             <?php 
@@ -73,79 +73,68 @@
              ?>
           </div>
           <div class="form-group">
-            <label for="">Khóa học</label>
-            <select class="form-control" name="course_id" id="course_id">
-              <option value="0">--Chọn khóa học--</option>
-              <?php foreach($cates as $row){ ?>
-                <option value="<?= $row['id']; ?>"><?= $row['name']; ?></option>
-              <?php }?>
-            </select>
-            <?php 
-              if(isset($_GET['k'])){
-                ?>
-                <span class="text-danger"><?= $_GET['k'] ?></span>
-                <?php
+            <label for="">Số điện thoại</label>
+            <input type="number" class="form-control" name="phone">
+            <?php  
+              if(isset($_GET['ph'])){
+            ?>
+            <span class="text-danger"><?= $_GET['ph']; ?></span>
+            <?php        
               }
-             ?>
+            ?>
           </div>
-
-          <div class="form-group">
-            <label for="">Lớp học</label>
-            <select class="form-control" name="class_id" id="class_id">
-              <option value="0">--Chọn lớp học--</option>
-              <?php  foreach($classes as $row){ ?>
-                <option value="<?= $row['id']; ?>"><?= $row['name']; ?></option>
-              <?php }?>
-            </select>
-            <?php 
-              if(isset($_GET['c'])){
-                ?>
-                <span class="text-danger"><?= $_GET['c'] ?></span>
-                <?php
-              }
-             ?>
+          
+          <div class="text-center">
+            <a name="<?= $ADMIN_URL ?>hocvien" id="" class="btn btn-danger btn-xs" href="<?= $ADMIN_URL ?>hocvien" role="button">Hủy</a>
+            <button type="submit" name="" class="btn btn-xs btn-primary">Tạo mới</button>
           </div>
-          </div>
-                <div class="col-md-6">
-                                    <div class="form-group">
-                                        <label for="">Số điện thoại</label>
-                                        <input type="text" class="form-control" name="phone">
-                                    </div>
-                                    <?php  
-                                            if(isset($_GET['ph'])){
-                                        ?>
-                                            <span class="text-danger"><?= $_GET['ph']; ?></span>
-                                        <?php        
-                                            }
-                                        ?>
-                                  <div class="form-group">
-                              <label>Mật khẩu</label>
-                              <input type="password" name="password" class="form-control" value="123">
-                              <?php 
-                                if(isset($_GET['p'])){
-                                  ?>
-                                  <span class="text-danger"><?= $_GET['p'] ?></span>
-                                  <?php
-                                }
-                              ?>
-                            </div>
-                            <div class="form-group">
-                              <label>Xác nhận mật khẩu</label>
-                              <input type="password" name="cfpassword" class="form-control" value="123">
-                              <?php 
-                                if(isset($_GET['cp'])){
-                                  ?>
-                                  <span class="text-danger"><?= $_GET['cp'] ?></span>
-                                  <?php
-                                }
-                              ?>
-                            </div>
-                          </div>
-                </div>
-                <div>
-                    <a name="<?= $ADMIN_URL ?>hocvien" id="" class="btn btn-danger btn-xs" href="<?= $ADMIN_URL ?>hocvien" role="button">Hủy</a>
-                    <button type="submit" name="" class="btn btn-xs btn-primary">Tạo mới</button>
-                </div>
+        </div>
+        <div class="col-md-6">
+          <!-- Địa chỉ -->
+            <div class="form-group">
+              <label>Địa chỉ</label>
+              <input type="text" name="address" class="form-control">
+              <?php 
+                if(isset($_GET['a'])){
+                  ?>
+                  <span class="text-danger"><?= $_GET['a'] ?></span>
+                  <?php
+                }
+              ?>
+            </div>
+            <!-- Ngày sinh -->
+             <div class="form-group">
+              <label>Ngày sinh</label>
+              <input type="date" name="ngaysinh" class="form-control">
+              <?php 
+                if(isset($_GET['ns'])){
+                  ?>
+                  <span class="text-danger"><?= $_GET['ns'] ?></span>
+                  <?php
+                }
+              ?>
+            </div>
+             <!-- Giới tính -->
+            <div class="form-group">
+              <label>Giới tính</label><br>
+              <label>
+                <input type="radio" name="gender" value="1" checked> Nam
+              </label>
+              
+              <label style="margin-left: 15px;">
+                <input type="radio" name="gender" value="-1"> Nữ
+              </label>
+              <?php 
+                if(isset($_GET['ge'])){
+                  ?>
+                  <span class="text-danger"><?= $_GET['ge'] ?></span>
+                  <?php
+                }
+              ?>
+            </div>
+        <div>
+                
+      </div>
                 
         </form>
 
@@ -164,6 +153,12 @@
                                     }
                                   }); 
                 })
+            });
+
+            // Lấy thông tin học phí
+            $('#course_id').change(function(){
+                var fee = $('#course_id option:selected').data('fee');
+                $('#hocphi').val(fee);
             });
           </script>
             </div>
