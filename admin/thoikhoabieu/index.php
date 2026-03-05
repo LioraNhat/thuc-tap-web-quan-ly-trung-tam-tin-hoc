@@ -127,6 +127,16 @@
                                   </select>
                               </div>
                               <div class="col-md-2 col-sm-4">
+                                <label small>Lớp học</label>
+                                <select name="f_class" id="class_id" class="form-control input-sm">
+                                    <option value="0">-- Tất cả --</option>
+                                    <?php foreach($classes as $r) {
+                                        $selected = (isset($_POST['f_class']) && $_POST['f_class'] == $r['id']) ? 'selected' : '';
+                                        echo "<option value='{$r['id']}' $selected>{$r['name']}</option>";
+                                    } ?>
+                                </select>
+                                </div>
+                              <div class="col-md-2 col-sm-4">
                                   <label small>Giáo viên</label>
                                   <select name="f_teacher" class="form-control input-sm">
                                       <option value="0">-- Tất cả --</option>
