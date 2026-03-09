@@ -9,7 +9,7 @@ if(isset($_POST['tk'])){
   }
 }
 $sql = "select *
-        from teachers".$search;
+        from teachers".$search." ORDER BY id DESC";
 $users = getSimpleQuery($sql, true);
   ?>
 <!DOCTYPE html>

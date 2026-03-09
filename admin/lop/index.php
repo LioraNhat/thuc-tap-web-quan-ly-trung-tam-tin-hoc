@@ -13,11 +13,12 @@
         $listRoomQuery = "SELECT cl.* FROM classes cl 
                           JOIN timetable tt ON cl.id = tt.class_id 
                           WHERE tt.teacher_id = $id 
-                          GROUP BY cl.id";
+                          GROUP BY cl.id
+                          ORDER BY cl.id DESC";
         $cates = getSimpleQuery($listRoomQuery, true);
     } else {
         // Nếu là Admin, lấy toàn bộ lớp học
-        $listRoomQuery = "select * from classes";
+        $listRoomQuery = "select * from classes ORDER BY id DESC";
         $cates = getSimpleQuery($listRoomQuery, true);
     }
 ?>

@@ -100,7 +100,7 @@
                                     <a href="<?= $ADMIN_URL?>lop/check.php?class_id=<?= $row['class_id']?>&day=<?= $row['day'] ?>" class="btn btn-xs btn-link">Điểm danh</a>
                                 </td>
                                 <td>
-                                    <a href="<?= $ADMIN_URL?>thoikhoabieu/edit1.php?id=<?= $row['id']?>" class="btn btn-xs btn-primary">Sửa</a>
+                                    <a href="<?= $ADMIN_URL?>thoikhoabieu/edit.php?id=<?= $row['id']?>" class="btn btn-xs btn-primary">Sửa</a>
                                     <a href="javascript:;" linkurl="<?= $ADMIN_URL?>thoikhoabieu/xoa.php?id=<?= $row['id']?>" class="btn btn-xs btn-danger btn-remove">Xóa</a>
                                 </td>
                             </tr>
@@ -203,7 +203,7 @@
                                 <td><?= $row['teacher_name'] ?></td>
                                 <td><?= $row['session_name'].' ('.$row['session_time'].')' ?></td>
                                 <td>
-                                    <a href="<?= $ADMIN_URL?>thoikhoabieu/edit1.php?id=<?= $row['id']?>" class="btn btn-xs btn-primary">Sửa</a>
+                                    <a href="<?= $ADMIN_URL?>thoikhoabieu/edit.php?id=<?= $row['id']?>" class="btn btn-xs btn-primary">Sửa</a>
                                     <a href="javascript:;" linkurl="<?= $ADMIN_URL?>thoikhoabieu/xoa.php?id=<?= $row['id']?>" class="btn btn-xs btn-danger btn-remove">Xóa</a>
                                 </td>
                             </tr>

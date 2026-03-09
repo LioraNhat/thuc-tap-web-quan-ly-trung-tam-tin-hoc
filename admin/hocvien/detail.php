@@ -14,7 +14,7 @@ if(!$user){
     die("Học viên không tồn tại");
 }
 
-$sql = "select * from student"
+$sql = "select * from student";
 ?>
 
 <h2>Chi tiết học viên</h2>

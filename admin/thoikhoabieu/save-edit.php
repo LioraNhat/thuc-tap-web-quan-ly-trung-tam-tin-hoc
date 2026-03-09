@@ -6,94 +6,98 @@ if($_SERVER['REQUEST_METHOD'] != 'POST'){
     die;
 }
 
-$id = $_POST['id'];
+$id      = $_POST['id'];
 $created = $_POST['created']; 
-$check = isset($_POST['check']) ? $_POST['check'] : []; 
+$check   = isset($_POST['check']) ? $_POST['check'] : [];
 
-// --- BƯỚC KIỂM TRA AN TOÀN ---
+// --- KIỂM TRA AN TOÀN ---
 $cr = (empty($created)) ? "cr=Vui lòng chọn ngày bắt đầu" : "";
-$th = (empty($check)) ? "th=Chọn thứ trong tuần" : "";
+$th = (empty($check))   ? "th=Chọn thứ trong tuần" : "";
 
 if($cr != "" || $th != ""){
     header('location: '.$ADMIN_URL.'thoikhoabieu/edit.php?id='.$id.'&'.$cr.'&'.$th);
     die;
 }
 
-$solan = count($check); 
-$sotiet = $_POST['soTiet'];
-$room = $_POST['room_id'];
-$teacher = $_POST['teacher_id'];
-$session = $_POST['session_id'];
-$class = $_POST['class_id'];
-$course = $_POST['course_id'];
+$solan   = count($check);
+$sotiet  = (int)$_POST['soTiet'];
+$room    = (int)$_POST['room_id'];
+$teacher = (int)$_POST['teacher_id'];
+$session = (int)$_POST['session_id'];
+$class   = (int)$_POST['class_id'];
+$course  = (int)$_POST['course_id'];
 
-$roo_old = $_POST['roo']; // Phòng cũ
-$ses_old = $_POST['ses']; // Ca cũ
+// Sắp xếp $check để đảm bảo thứ tự đúng
+sort($check);
 
-// 1. Lấy thông tin loại phòng mới xem có phải Online không
-$roomInfo = getSimpleQuery("SELECT type FROM rooms WHERE id = '$room'");
+// --- TÍNH NGÀY ĐẦU TIÊN ---
+$chuoi = explode("-", $created);
+$year  = (int)$chuoi[0]; $month = (int)$chuoi[1]; $day = (int)$chuoi[2];
+$jd    = cal_to_jd(CAL_GREGORIAN, $month, $day, $year);
+$day1  = jddayofweek($jd, 0); // 0=CN,1=T2,...,6=T7
 
-// 2. XÓA LỊCH CŨ CỦA LỚP NÀY (Để dọn chỗ cho lịch mới)
-$sqlDelete = "DELETE FROM timetable WHERE class_id = '$class'";
-getSimpleQuery($sqlDelete);
+// Tìm ngày đầu tiên hợp lệ (ngày gần nhất khớp với $check[0])
+$diff = $check[0] - $day1;
+if($diff < 0) $diff += 7;
+$startDate = date('Y-m-d', strtotime($created . " +$diff days"));
 
-// 3. SINH LỊCH MỚI
-$ngay = $created;
-$sl = $sotiet;
+// --- XÓA LỊCH CŨ ---
+getSimpleQuery("DELETE FROM timetable WHERE class_id = '$class'");
 
-$chuoi = explode("-", $ngay);
-$year = (int)$chuoi[0]; $month = (int)$chuoi[1]; $day = (int)$chuoi[2];
-$jd = cal_to_jd(CAL_GREGORIAN, $month, $day, $year);
-$day1 = jddayofweek($jd, 0);
+// --- SINH DANH SÁCH NGÀY HỌC ---
+$danhSachNgay = [];
+$currentDate  = $startDate;
+$buoiHienTai  = 0; // index trong $check (0..solan-1)
 
-$l = 1; $n = 1;
-for($i = 0; $i<$sl; $i++){
-    $date = date_create($ngay);
+for($i = 0; $i < $sotiet; $i++){
+    $danhSachNgay[] = $currentDate;
 
-    if($n == 1){
-        date_modify($date,"+".(($check[0]-$day1) >= 0 ? ($check[0]-$day1) : 7 + ($check[0]-$day1))." days");
-        $n = 2;
-    }else{
-        // ... (Giữ nguyên logic if/else của $solan 1-6 giống như save-add)
-        if($solan == 1) { date_modify($date,"+7 days"); }
-        // ... (Tương tự cho các trường hợp khác)
+    // Tính ngày kế tiếp
+    $buoiHienTai++;
+    if($buoiHienTai >= $solan){
+        // Hết 1 tuần → quay lại thứ đầu tiên của tuần sau
+        $buoiHienTai = 0;
+        $ngayDauTuan = date('Y-m-d', strtotime($currentDate . ' +' . (7 - $check[$solan-1] + $check[0]) . ' days'));
+        // Tính khoảng cách từ cuối tuần này đến thứ đầu tuần sau
+        $jdCurrent = cal_to_jd(CAL_GREGORIAN,
+            (int)date('m', strtotime($currentDate)),
+            (int)date('d', strtotime($currentDate)),
+            (int)date('Y', strtotime($currentDate))
+        );
+        $thuCurrent = jddayofweek($jdCurrent, 0);
+        $diffNext   = ($check[0] - $thuCurrent + 7) % 7;
+        if($diffNext == 0) $diffNext = 7;
+        $currentDate = date('Y-m-d', strtotime($currentDate . " +$diffNext days"));
+    } else {
+        // Cùng tuần → nhảy đến thứ tiếp trong $check
+        $diffNext    = $check[$buoiHienTai] - $check[$buoiHienTai - 1];
+        $currentDate = date('Y-m-d', strtotime($currentDate . " +$diffNext days"));
     }
+}
 
-    $name = date_format($date,"Y-m-d");
-
-    // --- KIỂM TRA XUNG ĐỘT TRƯỚC KHI LƯU ---
-    
-    // A. Chặn trùng phòng Online
-    if($roomInfo && $roomInfo['type'] == 1){ 
-        $sqlCheckRoom = "SELECT * FROM timetable WHERE day = '$name' AND session_id = '$session' AND room_id = '$room'";
-        if(getSimpleQuery($sqlCheckRoom)){
-            header('location: '.$ADMIN_URL.'thoikhoabieu/edit.php?id='.$id.'&err=Phòng Online đã bận vào ngày '.$name);
-            die; 
-        }
-    }
-
-    // B. Chặn trùng lịch Giáo viên
-    $sqlCheckTea = "SELECT * FROM timetable WHERE day = '$name' AND session_id = '$session' AND teacher_id = '$teacher'";
+// --- KIỂM TRA XUNG ĐỘT VÀ LƯU ---
+foreach($danhSachNgay as $name){
+    // Chặn trùng lịch giáo viên
+    $sqlCheckTea = "SELECT * FROM timetable 
+                    WHERE day = '$name' AND session_id = '$session' AND teacher_id = '$teacher'";
     if(getSimpleQuery($sqlCheckTea)){
-        header('location: '.$ADMIN_URL.'thoikhoabieu/edit.php?id='.$id.'&err=Giáo viên đã có lịch dạy vào ngày '.$name);
+        // Khôi phục: không thể rollback dễ dàng nên thông báo lỗi
+        header('location: '.$ADMIN_URL.'thoikhoabieu/edit.php?id='.$id.'&err='.urlencode('Giáo viên đã có lịch dạy vào ngày '.$name.', vui lòng chọn giáo viên khác'));
         die;
     }
 
-    // LƯU VÀO DATABASE
-    $sqlInsert = $conn->prepare("INSERT INTO timetable VALUES ('', ?, ?, ?, ?, ?, ?)");
-    $dataInsert = array($name, $course, $class, $room, $teacher, $session);
-    $sqlInsert->execute($dataInsert);
-
-    $ngay = $name; 
+    $sqlInsert = $conn->prepare("INSERT INTO timetable (day, course_id, class_id, room_id, teacher_id, session_id) VALUES (?, ?, ?, ?, ?, ?)");
+    $sqlInsert->execute([$name, $course, $class, $room, $teacher, $session]);
 }
 
-// Cập nhật lại ngày kết thúc cho bảng lớp học
-$sqlLast = "SELECT day FROM timetable WHERE class_id = '$class' ORDER BY day DESC LIMIT 1";
-$last = getSimpleQuery($sqlLast);
-$ended = $last['day'];
+// --- CẬP NHẬT NGÀY KẾT THÚC LỚP HỌC ---
+$last   = getSimpleQuery("SELECT day FROM timetable WHERE class_id = '$class' ORDER BY day DESC LIMIT 1");
+$ended  = $last ? $last['day'] : $created;
+$first  = getSimpleQuery("SELECT day FROM timetable WHERE class_id = '$class' ORDER BY day ASC LIMIT 1");
+$started = $first ? $first['day'] : $created;
 
-$sqlUpdateClass = $conn->prepare("UPDATE classes SET ended_at = ? WHERE id = ?");
-$sqlUpdateClass->execute(array($ended, $class));
+$sqlUpdateClass = $conn->prepare("UPDATE classes SET created_at = ?, ended_at = ? WHERE id = ?");
+$sqlUpdateClass->execute([$started, $ended, $class]);
 
 header('location: '. $ADMIN_URL . 'thoikhoabieu?editsuccess=true');
 die;

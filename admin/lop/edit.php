@@ -10,7 +10,7 @@ if(!$cate){
 }
 
 $listCateQuery =   "select *
-                    from courses";
+                    from courses ORDER BY id DESC";
 $cates = getSimpleQuery($listCateQuery,true);
 $cate_id = $cate['course_id'];
  ?>

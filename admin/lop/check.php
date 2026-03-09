@@ -1,156 +1,187 @@
 <?php 
     $path = "../";
     require_once $path.$path.'commons/utils.php';
-    $id = $_GET['class_id'];
-    $day = $_GET['day'];
-    $day1 = date("Y/m/d");
-    if(strtotime($day) != strtotime($day1) && $_SESSION['login']['role'] != 500){
-      header('location: '. $ADMIN_URL . 'thoikhoabieu/');
-      die;
+
+    // Dùng $class_id xuyên suốt, KHÔNG dùng $id để tránh bị ghi đè
+    $class_id = (int)$_GET['class_id'];
+    $day      = $_GET['day'];
+    $today    = date("Y-m-d");
+
+    // Chỉ admin (role 500) mới được điểm danh ngày khác hôm nay
+    if(strtotime($day) != strtotime($today) && $_SESSION['login']['role'] != 500){
+        header('location: '. $ADMIN_URL . 'thoikhoabieu/');
+        die;
     }
-    $listRoomQuery = "select * from dangky inner join student on dangky.student_id = student.id where class_id = $id and status = 1";
-    $cates = getSimpleQuery($listRoomQuery,true);
- ?>
+
+    // Kiểm tra lớp này có ca học ngày đó không
+    $checkSession = getSimpleQuery(
+        "SELECT t.*, s.name as session_name, s.time as session_time 
+         FROM timetable t 
+         JOIN session s ON t.session_id = s.id
+         WHERE t.class_id = '$class_id' AND t.day = '$day'
+         LIMIT 1"
+    );
+    $coLich = (is_array($checkSession) && isset($checkSession['session_id']));
+
+    // Lấy tên lớp (tách ra PHP, KHÔNG dùng $id)
+    $classInfo = getSimpleQuery("SELECT * FROM classes WHERE id = $class_id");
+
+    // Lấy danh sách học viên của lớp
+    $cates = getSimpleQuery(
+        "SELECT * FROM dangky 
+         INNER JOIN student ON dangky.student_id = student.id 
+         WHERE dangky.class_id = $class_id AND student.status = 1",
+        true
+    );
+?>
 <!DOCTYPE html>
 <html>
 <head>
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <title>POLY | Danh mục</title>
+  <title>POLY | Điểm danh</title>
   <?php include_once $path.'_share/style_assets.php'; ?>
 </head>
 <body class="hold-transition skin-blue sidebar-mini">
 <div class="wrapper">
   <?php include_once $path.'_share/header.php'; ?>
-  
   <?php include_once $path.'_share/sidebar.php'; ?>
-  
 
-  <!-- Content Wrapper. Contains page content -->
   <div class="content-wrapper">
-    <!-- Content Header (Page header) -->
     <section class="content-header">
-      <h1>
-        Dashboard
-        <small>Control panel</small>
-      </h1>
+      <h1>Điểm danh <small>Control panel</small></h1>
       <ol class="breadcrumb">
         <li><a href="#"><i class="fa fa-dashboard"></i> Home</a></li>
-        <li class="active">Điểm danh </li>
+        <li class="active">Điểm danh</li>
       </ol>
     </section>
 
-    <!-- Main content -->
     <section class="content">
-      
-            <div class="row">
-                <div class="col-xs-12">
-                <div class="box">
-                <div class="box-header">
-              <h3 class="box-title">Điểm danh lớp <strong class="text-primary"><?php 
-              $id = $_GET['class_id'];
-              $listClassQuery = "select * from classes where id = $id";
-              $cate = getSimpleQuery($listClassQuery);
-              echo $cate['name'];
-              ?></strong></h3>
-                  </div>
-            <!-- /.box-header -->
+      <div class="row">
+        <div class="col-xs-12">
+          <div class="box">
+            <div class="box-header">
+              <h3 class="box-title">
+                Điểm danh lớp 
+                <strong class="text-primary">
+                  <?= ($classInfo && isset($classInfo['name'])) ? $classInfo['name'] : 'Không tìm thấy lớp' ?>
+                </strong>
+                &nbsp;
+                <?php if($coLich): ?>
+                  <span class="label label-success">
+                    <i class="fa fa-clock-o"></i>
+                    <?= $checkSession['session_name'] ?> — <?= $checkSession['session_time'] ?>
+                  </span>
+                <?php else: ?>
+                  <span class="label label-danger">
+                    <i class="fa fa-times"></i> Ngày này lớp không có lịch học
+                  </span>
+                <?php endif; ?>
+              </h3>
+            </div>
+
             <div class="box-body">
+              <?php if(!$coLich && $_SESSION['login']['role'] != 500): ?>
+                <div class="alert alert-warning">
+                  <i class="fa fa-exclamation-triangle"></i>
+                  <strong>Không thể điểm danh!</strong> Ngày này lớp không có ca học.
+                </div>
+              <?php else: ?>
+
                 <form action="save-check.php" method="post">
-              <table class="table table-bordered">
-                <tbody id="oday">
-                <tr>
-                  <th style="width: 10px">#</th>
-                  <th>Ảnh đại diện</th>
-                  <th>Mã sinh viên</th>
-                  <th>Tên sinh viên</th>
-                  <th style="width: 120px">Tình trạng</th>
-                </tr>
-                <?php foreach($cates as $key=> $row) { ?>
-                <tr>
-                  <td><?php echo $key+1; ?></td>
-                  <td><img src="<?php echo SITE_URL.$row['avatar'] ?>" alt="" style="width:150px;"></td>
-                  <td><?php echo $row['id']; ?></td>
-                  <td><?php echo $row['fullname']; ?></td>
-                  <td>
-                  <div class="checkbox">
-                  <select class="form-control" id="check" name="check[]">
-                    <option value="0" <?php $student = $row['student_id'];
-                    $listStuQuery = "select * from student_check where student_id = $student and day = '$day' and class_id = '$id'";
-                    $stu = getSimpleQuery($listStuQuery);
-                    if($stu){
-                      if($stu['status']==0){
-                        echo "selected";
+                  <table class="table table-bordered">
+                    <tbody>
+                      <tr>
+                        <th style="width:10px">#</th>
+                        <th>Ảnh đại diện</th>
+                        <th>Mã sinh viên</th>
+                        <th>Tên sinh viên</th>
+                        <th style="width:160px">Tình trạng</th>
+                      </tr>
+
+                      <?php foreach($cates as $key => $row):
+                        $student_id = $row['student_id'];
+
+                        $stuCheck = getSimpleQuery(
+                            "SELECT * FROM student_check 
+                             WHERE student_id = '$student_id' 
+                               AND day = '$day' 
+                               AND class_id = '$class_id'
+                             LIMIT 1"
+                        );
+
+                        $daVang       = (is_array($stuCheck) && $stuCheck['status'] == 0);
+                        $daCóMặt     = (is_array($stuCheck) && $stuCheck['status'] == 1);
+                        $chuaDiemDanh = !is_array($stuCheck);
+                      ?>
+                      <tr>
+                        <td><?= $key + 1 ?></td>
+                        <td><img src="<?= SITE_URL . $row['avatar'] ?>" style="width:60px; border-radius:4px;"></td>
+                        <td><?= $row['student_id'] ?></td>
+                        <td><?= $row['fullname'] ?></td>
+                        <td>
+                          <select class="form-control" name="check[]">
+                            <option value="1" <?= ($daCóMặt || $chuaDiemDanh) ? 'selected' : '' ?>>
+                              ✅ Có mặt
+                            </option>
+                            <option value="0" <?= $daVang ? 'selected' : '' ?>>
+                              ❌ Vắng mặt
+                            </option>
+                          </select>
+                        </td>
+                      </tr>
+                      <?php endforeach; ?>
+                    </tbody>
+                  </table>
+
+                  <div class="form-group">
+                    <input type="hidden" name="day"   value="<?= $day ?>">
+                    <input type="hidden" name="class" value="<?= $class_id ?>">
+
+                    <?php
+                      $role     = $_SESSION['login']['role'];
+                      $disabled = "";
+                      if($role != 500){
+                          $stuCheck2 = getSimpleQuery(
+                              "SELECT * FROM student_check 
+                               WHERE day = '$day' AND class_id = '$class_id'
+                               LIMIT 1"
+                          );
+                          if(is_array($stuCheck2) && $stuCheck2['num_check'] == 1){
+                              $disabled = "disabled";
+                          }
+                          if(!$coLich){
+                              $disabled = "disabled";
+                          }
+                          if($role == 0){
+                              $disabled = "disabled";
+                          }
                       }
-                    }
-                    ?>>Vắng mặt</option>
-                    <option value="1" <?php $student = $row['student_id'];
-                    $listStuQuery = "select * from student_check where student_id = $student and day = '$day'  and class_id = '$id'";
-                    $stu = getSimpleQuery($listStuQuery);
-                    if($stu){
-                      if($stu['status']==1){
-                        echo "selected";
-                      }
-                    }
-                    ?> >Có mặt</option>
-                  </select>
+                    ?>
+                    <button type="submit" name="update" class="btn btn-primary" <?= $disabled ?>>
+                      <i class="fa fa-save"></i> Cập nhật điểm danh
+                    </button>
                   </div>
-                </tr>
-                <?php } ?>
-              </tbody>
-              </table>
-                <div class="form-group">
-                <input type="hidden" name="day" value="<?= $day; ?>">
-                <input type="hidden" name="class" value="<?php echo $class = $_GET['class_id']; ?>">
-                  <button type="submit" name="update" id="" class="btn btn-primary" <?php
-                  $id = $_SESSION['login']['role'];
-                  $listStuQuery = "select * from student_check where day = '$day' and class_id = '$class'  ";
-                  $stu = getSimpleQuery($listStuQuery);
-                  if($id == 500){
-                    echo "";
-                  }else if($stu['num_check'] == 1 || $id == 0){ 
-                    echo "disabled" ;
-                  }  ?>>Cập nhật</button>
-                </div>
                 </form>
+
+              <?php endif; ?>
             </div>
-            <!-- /.box-body -->
           </div>
-                </div>
-            </div>
-            
+        </div>
+      </div>
     </section>
-    <!-- /.content -->
   </div>
-  <!-- /.content-wrapper -->
-  
+
   <?php include_once $path.'_share/footer.php'; ?>
 </div>
-<!-- ./wrapper -->
 
 <?php include_once $path.'_share/script_assets.php'; ?>
-<script type="text/javascript">
-    <?php 
-      if(isset($_GET['success']) && $_GET['success'] == true){
-    ?> 
-       swal('Tạo mới danh mục thành công!');
-    <?php }else if(isset($_GET['editsuccess']) && $_GET['editsuccess'] == true){ ?>
-      swal('Sửa danh mục thành công!');
-    <?php }?>
-    $('.btn-remove').on('click',function(){
-      swal({
-      title: "Cảnh báo!",
-      text: "Bạn có chắc chắn muốn xoá danh mục này ?",
-      icon: "warning",
-      buttons: true,
-      dangerMode: true,
-    })
-    .then((willDelete) => {
-      if (willDelete) {
-        window.location.href = $(this).attr('linkurl');
-      }
-      });
-    })
+<script>
+  <?php if(isset($_GET['success'])): ?>
+    swal('Điểm danh thành công!');
+  <?php elseif(isset($_GET['editsuccess'])): ?>
+    swal('Cập nhật điểm danh thành công!');
+  <?php endif; ?>
 </script>
 </body>
 </html>
